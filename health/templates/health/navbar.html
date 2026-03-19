@@ -1,0 +1,88 @@
+<style>
+    /* Netflix Dark Theme for Navbar */
+    .navbar {
+        /* FIXED: Changed from reddish-brown to Deep Netflix Black */
+        background-color: rgba(22, 21, 21, 0.9) !important; 
+        border-bottom: 2px solid #E50914; 
+        padding: 15px 40px;
+        /* Ensure no other Bootstrap backgrounds interfere */
+        background-image: none !important;
+    }
+
+    /* Brand Logo Styling */
+    .navbar-brand {
+        color: #e9e4e4 !important;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none !important;
+    }
+
+    /* Flexbox Layout for Links */
+    .navbar-nav {
+        display: flex !important;
+        gap: 20px;
+        list-style: none;
+        margin-left: auto; /* Pushes links to the right for a cleaner look */
+    }
+
+    /* Link Styling */
+    .nav-link {
+        color: #b3b3b3 !important; 
+        font-weight: bold;
+        text-decoration: none !important; 
+        transition: color 0.3s ease;
+        text-transform: uppercase;
+        font-size: 14px;
+    }
+
+    .nav-link:hover, .nav-link.active {
+        color: white !important; 
+    }
+
+    /* Fix for the Toggler Icon */
+    .navbar-toggler {
+        border: none !important;
+        background-color: transparent !important; /* Ensures no white box on mobile */
+    }
+    
+    .navbar-toggler:focus {
+        box-shadow: none !important; /* Removes blue outline */
+    }
+
+    .navbar-toggler-icon {
+        filter: invert(1); 
+    }
+</style>
+
+<!-- REMOVED 'bg-body-tertiary' class below -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container-fluid" style="display: flex; justify-content: space-between; align-items: center;">
+    <a class="navbar-brand" href="#">
+      <h1 style="color: white; font-size: 2.2rem; font-weight: 700; margin: 0; letter-spacing: 2px;">
+        CALORIE <span style="color: #E50914;">TRACKER</span>
+    </h1>
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'dashboard' %}">Home</a>
+        </li>
+         <li class="nav-item">
+          <a class="nav-link" href="{% url 'products' %}">Products</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'about' %}">About</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>

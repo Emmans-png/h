@@ -1,0 +1,219 @@
+{% load static %}
+{% include 'health/navbar.html' %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products | CalorieTracker</title>
+    <style>
+        /* Global Netflix Dark Theme */
+        body { 
+            background-color: #141414; 
+            background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url("{% static 'images/home.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white; 
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Reusing Navbar Styling */
+
+        .container { 
+            padding: 120px 60px 40px 60px; /* Space for fixed navbar */
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Hero Text Section */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero-question {
+            font-size: 1.5rem;
+            color: #b3b3b3;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .hero-main {
+            font-size: 3rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .hero-main span {
+            color: #E50914;
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: #181818;
+            border-radius: 8px;
+            overflow: hidden;
+            border-bottom: 4px solid transparent;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .product-card:hover {
+            transform: scale(1.03);
+            border-color: #E50914;
+            cursor: pointer;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #444;
+            font-weight: bold;
+            font-size: 2rem;
+        }
+
+        .product-info {
+            padding: 25px;
+        }
+
+        .product-tag {
+            color: #E50914;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .product-name {
+            font-size: 1.5rem;
+            margin: 10px 0;
+            color: white;
+        }
+
+        .product-desc {
+            color: #b3b3b3;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .btn-buy {
+            background: #E50914;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-weight: bold;
+            border-radius: 4px;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-buy:hover {
+            background: #ff1f1f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- THE QUESTION SECTION -->
+        <div class="hero-section">
+            <p class="hero-question">Looking to stay healthy? Try these from our <span>trusted</span> partners</p>
+            <h1 class="hero-main">Fuel Your <span>Progress</span></h1>
+        </div>
+
+        <!-- PRODUCT GRID -->
+        <div class="product-grid">
+            
+            <!-- Product 1 -->
+            <div class="product-card">
+                <div class="product-image">PREMIUM WHEY</div>
+                <div class="product-info">
+                    <span class="product-tag">Protein & Recovery</span>
+                    <h3 class="product-name">Lean Muscle Pro</h3>
+                    <p class="product-desc">The purest whey isolate for post-workout recovery. Zero sugar, high absorption.</p>
+                    <button class="btn-buy" onclick="pay(1, 'Lean Muscle Pro')">Purchase</button>
+                </div>
+            </div>
+
+            <!-- Product 2 -->
+            <div class="product-card">
+                <div class="product-image">SMART SCALE</div>
+                <div class="product-info">
+                    <span class="product-tag">Hardware</span>
+                    <h3 class="product-name">SyncScale 2.0</h3>
+                    <p class="product-desc">Smart body composition scale that syncs directly with your CalorieTracker dashboard.</p>
+                    <button class="btn-buy" onclick="pay(1, 'SyncScale 2.0')">Purchase</button>
+                </div>
+            </div>
+
+            <!-- Product 3 -->
+            <div class="product-card">
+                <div class="product-image">VITAMIN PACK</div>
+                <div class="product-info">
+                    <span class="product-tag">Wellness</span>
+                    <h3 class="product-name">Daily Vitality</h3>
+                    <p class="product-desc">A complete daily multivitamin pack tailored for active individuals tracking their macros.</p>
+                    <button class="btn-buy" onclick="pay(1, 'Daily Vitality Subscription')">Purchase</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function pay(amount, productName) {
+            const phoneNumber = prompt(`Enter M-Pesa Number for ${productName} (2547XXXXXXXX):`);
+            
+            if (phoneNumber) {
+                // Find the button that was clicked to show a loading state
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = "PROCESSING...";
+                btn.disabled = true;
+                btn.style.background = "#564d4d";
+
+                fetch('/stk-push/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        phone: phoneNumber,
+                        amount: amount,
+                        product: productName
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert("STK Push Sent! Please enter your M-Pesa PIN on your phone.");
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Something went wrong. Please check your backend connection.");
+                })
+                .finally(() => {
+                    // Reset button state
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    btn.style.background = "#E50914";
+                });
+            }
+        }
+    </script>
+
+</body>

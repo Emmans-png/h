@@ -1,0 +1,274 @@
+{% load static %}
+{% include 'health/navbar.html' %}
+<style>
+    /* Global Netflix Dark Theme */
+    body { 
+        background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;        
+        color: white; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    .container { padding: 40px; }
+    .main-layout { display: flex; gap: 30px; align-items: flex-start; }
+    
+    /* LEFT SIDE: Main Feed */
+    .content-area { flex: 3; }
+    .content-area h2 { color: #E50914; font-size: 2rem; margin-bottom: 20px; }
+
+    /* Card Grid for Today's Feed */
+    .today-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+    .food-card { 
+        background: #181818; 
+        padding: 20px; 
+        border-radius: 4px; 
+        border-bottom: 3px solid #E50914;
+    }
+
+    /* RIGHT SIDE: Sidebar */
+    .sidebar { 
+        flex: 1; 
+        background: #181818; 
+        padding: 25px; 
+        border-radius: 4px; 
+        height: 85vh; 
+        overflow-y: auto; 
+        box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+    }
+    
+    .history-item { border-bottom: 1px solid #333; padding: 12px 0; }
+    .history-date { color: #E50914; font-weight: bold; display: block; font-size: 11px; margin-bottom: 4px; }
+
+    /* SIDE DRAWER STYLES */
+    .side-drawer {
+        position: fixed;
+        top: 0;
+        right: -450px; /* Hidden */
+        width: 350px;
+        height: 100%;
+        background-color: #111;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.9);
+        transition: 0.4s ease-in-out;
+        z-index: 1000;
+        padding: 60px 30px;
+        border-left: 2px solid #E50914;
+    }
+    .side-drawer.active { right: 0; }
+    
+    .drawer-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        display: none;
+        z-index: 999;
+    }
+
+    /* Drawer Form Inputs */
+    .side-drawer input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0 20px 0;
+        background: #222;
+        border: 1px solid #444;
+        color: white;
+        border-radius: 4px;
+    }
+    /* Left Side Review Drawer */
+.review-drawer {
+    position: fixed;
+    top: 0;
+    left: -450px; /* Hidden off-screen left */
+    width: 400px;
+    height: 100%;
+    background-color: #111;
+    box-shadow: 10px 0 30px rgba(0,0,0,0.9);
+    transition: 0.4s ease-in-out;
+    z-index: 1000;
+    padding: 40px 30px;
+    border-right: 2px solid #E50914;
+    overflow-y: auto;
+}
+.review-drawer.active { left: 0; }
+
+.chart-container {
+    background: #181818;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+</style>
+<!-- LEFT DRAWER: REVIEW & PRODUCTS -->
+<div id="reviewOverlay" class="drawer-overlay" onclick="closeReview()"></div>
+<div id="reviewDrawer" class="side-drawer" style="left: -450px; right: auto; border-left: none; border-right: 2px solid #E50914;">
+    <h2 style="color: #E50914; margin-bottom: 5px;">Daily Review</h2>
+    <p style="color: #666; font-size: 13px; margin-bottom: 25px;">Visualizing Total Daily Calories</p>
+    
+    <div style="background: #181818; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #333; height: 250px;">
+        <canvas id="mealChart"></canvas>
+    </div>
+    <button onclick="closeReview()" style="background:transparent; color:#E50914; border:1px solid #E50914; width:100%; padding:12px; margin-top:40px; cursor:pointer; font-weight:bold;">
+        CLOSE REVIEW
+    </button>
+</div>
+
+<!-- RIGHT DRAWER: ADD/EDIT MEAL -->
+<div id="overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="sideDrawer" class="side-drawer">
+    <h2 style="color: #E50914; margin-bottom: 5px;">{% if editing %}Edit Log{% else %}New Meal{% endif %}</h2>
+    <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Type food and quantity for auto-calories</p>
+    
+    <form method="POST" id="calorieForm">
+        {% csrf_token %}
+        <div class="auto-fill-group">
+            {{ form.as_p }}
+        </div>
+        <div id="api-status" style="font-size: 11px; color: #E50914; margin-top: -10px; height: 15px; font-style: italic;"></div>
+
+        <button type="submit" style="background:#E50914; color:white; border:none; padding:15px; width:100%; font-weight:bold; cursor:pointer; margin-top: 20px; letter-spacing: 1px;">
+            {% if editing %}UPDATE CHANGES{% else %}SAVE TO FEED{% endif %}
+        </button>
+        <button type="button" onclick="closeDrawer()" style="background:transparent; color:#b3b3b3; border:none; width:100%; margin-top:15px; cursor:pointer; font-size: 12px;">
+            CANCEL
+        </button>
+    </form>
+</div>
+
+<div class="container">
+    <div class="main-layout">
+        <!-- MAIN CONTENT -->
+        <div class="content-area">
+           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h2 style="margin:0;">Today's Meal</h2>
+                    <p style="color: #E50914; font-weight: bold; margin: 5px 0 0 0;">Total: {{ total|default:"0" }} kcal</p>
+                </div>
+                
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button onclick="openReview()" style="background:transparent; color:white; border:1px solid #444; padding:10px 20px; font-weight:bold; border-radius:4px; cursor:pointer;">
+                        VIEW REVIEW
+                    </button>
+
+                    <button onclick="openDrawer()" style="background:#E50914; color:white; border:none; padding:10px 25px; font-weight:bold; border-radius:4px; cursor:pointer; transition: 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        + ADD MEAL
+                    </button>
+
+                    <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                         {% csrf_token %}
+                         <button type="submit" style="background: none; border: none; color: #b3b3b3; cursor: pointer; font-weight: bold; font-size: 14px;">Sign Out</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="today-grid">
+                {% for log in logs %}
+                <div class="food-card">
+                    <span style="color:#666; font-size:10px; text-transform:uppercase;">Recently </span>
+                    <h3 style="margin: 5px 0;">{{ log.food_name }}</h3>
+                    <div style="color: #E50914; font-weight:bold;">{{ log.calories }} kcal</div>
+                    <div style="margin-top:15px; font-size:12px;">
+                        <a href="{% url 'edit_mode' log.id %}" style="color:#b3b3b3; text-decoration:none; margin-right:10px;">Edit</a>
+                        <a href="{% url 'delete' log.id %}" style="color:#444; text-decoration:none;">Remove</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p style="color:#666;">No activity today. Start logging to fill your feed!</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <h3 style="color: white; border-bottom: 2px solid #E50914; padding-bottom: 10px; margin-top:0;">CAL History</h3>
+            {% for day in history_summary %}
+                <div style="margin-top: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                        <span class="history-date" style="font-size: 14px;">{{ day.date|date:"M d, Y" }}</span>
+                        <span style="color: #E50914; font-weight: bold; font-size: 12px;">Total: {{ day.day_total }} kcal</span>
+                    </div>
+                    <div style="margin-top: 10px; padding-left: 10px;">
+                        {% for item in all_logs %}
+                            {% if item.date == day.date %}
+                                <div style="margin-bottom: 8px; font-size: 13px;">
+                                    <strong style="color: #eee;">{{ item.food_name }}</strong>
+                                    <span style="color: #666; float: right;">{{ item.calories }} kcal</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% empty %}
+                <p style="color: #444; font-size: 12px;">No previous history found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function openDrawer() { document.getElementById("sideDrawer").classList.add("active"); document.getElementById("overlay").style.display = "block"; }
+    function closeDrawer() { document.getElementById("sideDrawer").classList.remove("active"); document.getElementById("overlay").style.display = "none"; }
+    function openReview() { document.getElementById("reviewDrawer").style.left = "0"; document.getElementById("reviewOverlay").style.display = "block"; }
+    function closeReview() { document.getElementById("reviewDrawer").style.left = "-450px"; document.getElementById("reviewOverlay").style.display = "none"; }
+
+    {% if editing %} window.onload = openDrawer; {% endif %}
+
+    // AUTO-CALORIE LOOKUP
+    const foodInput = document.querySelector('input[name="food_name"]');
+    const calInput = document.querySelector('input[name="calories"]');
+    const statusDiv = document.getElementById('api-status');
+    let typingTimer;
+
+    foodInput.addEventListener('input', () => {
+        clearTimeout(typingTimer);
+        statusDiv.innerText = "Searching calories...";
+        typingTimer = setTimeout(() => {
+            const query = foodInput.value;
+            if (query.length > 2) {
+                fetch(`https://api.calorieninjas.com/v1/nutrition?query=${encodeURIComponent(query)}`, {
+                    headers: { 'X-Api-Key': 'qdMlWymr887Ln0Hi0CRJLTT51mJZCa3cXju0ozyQ' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.items && data.items.length > 0) {
+                        const totalCals = data.items.reduce((acc, item) => acc + item.calories, 0);
+                        calInput.value = Math.round(totalCals);
+                        statusDiv.innerText = "✓ Match found";
+                        statusDiv.style.color = "#4CAF50";
+                    } else { statusDiv.innerText = "No data found"; statusDiv.style.color = "#E50914"; }
+                }).catch(() => { statusDiv.innerText = "Search error"; });
+            }
+        }, 1000);
+    });
+
+    // CHART LOGIC: DAILY TOTALS
+    if (typeof Chart !== 'undefined') {
+        const ctx = document.getElementById('mealChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for day in history_summary reversed %}"{{ day.date|date:'M d' }}",{% endfor %}],
+                datasets: [{
+                    label: 'Total kcal',
+                    data: [{% for day in history_summary reversed %}{{ day.day_total }},{% endfor %}],
+                    backgroundColor: '#E50914',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#222' }, ticks: { color: '#666', font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { color: '#fff' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+</script>

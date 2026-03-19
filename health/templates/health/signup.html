@@ -1,0 +1,57 @@
+{% load static %}
+<style>
+    body{
+        background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+    }
+    input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        background: rgb(97, 93, 93) !important;
+        border: none;
+        border-radius: 4px;
+        color: white !important;
+    }
+    .helptext, .errorlist {
+        font-size: 11px;
+        color: #b3b3b3;
+        list-style: none;
+        padding: 0;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container" style="display:flex; justify-content:center; align-items:center; height:85vh;">
+    <div class="card" style="width:400px; padding:60px; color: #a39f9f">
+        <h2 style="margin-bottom:25px; font-weight:bold;"></h2>
+        <div style="border-left: 5px solid #E50914; padding-left: 15px; margin-bottom: 40px;">
+    <h1 style="color: white; font-size: 2.2rem; font-weight: 700; margin: 0; letter-spacing: 2px;">
+        CALORIE <span style="color: #E50914;">TRACKER</span>
+    </h1>
+    <p style="color: #666; font-size: 14px; margin: 0;">Log. Track. Conquer.</p>
+</div>
+                <h2 style="margin-bottom:25px; font-weight:bold;">Sign Up</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <!-- Django loops through Username, Password 1, and Password 2 -->
+            {{ form.as_p }}
+            
+            <button type="submit" class="btn-netflix" style="padding:15px; margin-top:10px; font-size:16px;">
+                Create Account
+            </button>
+        </form>
+        
+        <div style="margin-top:20px; border-top: 1px solid #333; padding-top:20px;">
+            <span style="color:#737373;">Already have an account?</span>
+            <a href="{% url 'login' %}" style="color:#737373; text-decoration:none; font-weight:bold; margin-left:5px;">
+                Sign In now.
+            </a>
+        </div>
+    </div>
+</div>
