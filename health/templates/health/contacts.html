@@ -1,24 +1,241 @@
-{% include "health/navbar.html" %}
+{% load static %}
+{% include 'health/navbar.html' %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-    body {
-        background-color: #141414;
-        color: white;
+    /* Global Netflix Dark Theme */
+    body { 
+        background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;        
+        color: white; 
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         margin: 0;
         padding: 0;
+        overflow-x: hidden;
+        line-height: 1.6;
+    }
+    
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 60px 40px;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 50px;
+        position: relative;
+    }
+    
+    .page-header h1 {
+        color: #E50914;
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        text-shadow: 0 4px 20px rgba(229, 9, 20, 0.3);
+    }
+    
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, #E50914, #ff0a16);
+        border-radius: 2px;
+    }
+    
+    .contact-intro {
+        background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(45, 45, 45, 0.9) 100%);
+        border-radius: 16px;
+        padding: 40px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(229, 9, 20, 0.2);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        text-align: center;
+    }
+    
+    .contact-intro p {
+        font-size: 1.4rem;
+        line-height: 1.8;
+        color: #e0e0e0;
+        margin: 0;
+        font-weight: 300;
+    }
+    
+    .contact-info {
+        background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(45, 45, 45, 0.9) 100%);
+        border-radius: 16px;
+        padding: 40px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(229, 9, 20, 0.2);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .contact-info h2 {
+        color: #E50914;
+        font-size: 2rem;
+        font-weight: 600;
+        margin: 0 0 30px 0;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    
+    .contact-methods {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+    }
+    
+    .contact-method {
+        background: rgba(229, 9, 20, 0.1);
+        border-radius: 12px;
+        padding: 30px;
+        text-align: center;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .contact-method:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(229, 9, 20, 0.3);
+        background: rgba(229, 9, 20, 0.15);
+    }
+    
+    .contact-method .icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        display: block;
+    }
+    
+    .contact-method h3 {
+        color: #E50914;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0 0 15px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .contact-method p {
+        font-size: 1.1rem;
+        color: #e0e0e0;
+        margin: 0;
+        line-height: 1.6;
+    }
+    
+    .highlight {
+        color: #E50914;
+        font-weight: 600;
+    }
+    
+    .social-section {
+        text-align: center;
+        margin-top: 40px;
+        padding: 30px;
+        background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(229, 9, 20, 0.05) 100%);
+        border-radius: 12px;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+    
+    .social-section p {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #ffffff;
+        margin: 0 0 20px 0;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container {
+            padding: 40px 20px;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+        }
+        
+        .contact-intro, .contact-info {
+            padding: 30px 20px;
+        }
+        
+        .contact-intro p {
+            font-size: 1.2rem;
+        }
+        
+        .contact-info h2 {
+            font-size: 1.5rem;
+        }
+        
+        .contact-methods {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .contact-method .icon {
+            font-size: 2.5rem;
+        }
+        
+        .contact-method h3 {
+            font-size: 1.1rem;
+        }
+        
+        .contact-method p {
+            font-size: 1rem;
+        }
+        
+        .social-section p {
+            font-size: 1.1rem;
+        }
     }
 </style>
-<div class="container" style="padding-top: 30px; padding-left: 30px;">
-    <h1 style="color: red;">Contact Us</h1>
-    <p>
-        Have questions or feedback? We'd love to hear from you! 
-    </p>
-    <p>
-        You can reach us at:
-    </p>
-    <ul>
-        <li>Email: info@healthtracker.com</li>
-        <li>Phone: +2541234567</li>
-        <li>Address: 123 Health St, Wellness City</li>
-    </ul>
+<div class="container">
+    <div class="page-header">
+        <h1>Contact Us</h1>
+    </div>
+    
+    <div class="contact-intro">
+        <p>
+            Have questions or feedback? <span class="highlight">We'd love to hear from you!</span> Our team is always ready to help you on your health journey.
+        </p>
+    </div>
+    
+    <div class="contact-info">
+        <h2>Get In Touch</h2>
+        <div class="contact-methods">
+            <div class="contact-method">
+                <span class="icon">📧</span>
+                <h3>Email</h3>
+                <p>info@healthtracker.com</p>
+            </div>
+            
+            <div class="contact-method">
+                <span class="icon">📱</span>
+                <h3>Phone</h3>
+                <p>+254 123 456 789</p>
+            </div>
+            
+            <div class="contact-method">
+                <span class="icon">📍</span>
+                <h3>Address</h3>
+                <p>123 Health Street<br>Wellness City, Kenya</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="social-section">
+        <p>
+            Follow us on social media for daily tips and updates!
+        </p>
+    </div>
 </div>

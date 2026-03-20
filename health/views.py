@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
@@ -11,6 +12,27 @@ from django.urls import reverse
 
 from .mpesa import mpesa_stk_push, mpesa_access_token_info, _discover_ngrok_callback_url
 
+def categorize_food(food_name):
+    """Automatically categorize food based on name"""
+    food_name_lower = food_name.lower()
+    
+    # Proteins
+    protein_keywords = ['beef', 'lobster', 'fish', 'eggs', 'chicken', 'turkey', 'pork', 'lamb', 'meat', 'salmon', 'tuna', 'shrimp', 'bacon', 'sausage', 'steak']
+    if any(keyword in food_name_lower for keyword in protein_keywords):
+        return 'proteins'
+    
+    # Carbohydrates
+    carb_keywords = ['maize', 'seed', 'rice', 'bread', 'pasta', 'potato', 'corn', 'wheat', 'oats', 'quinoa', 'cereal', 'flour', 'sugar']
+    if any(keyword in food_name_lower for keyword in carb_keywords):
+        return 'carbohydrates'
+    
+    # Vitamins (fruits and vegetables)
+    vitamin_keywords = ['apple', 'banana', 'orange', 'grape', 'berry', 'vegetable', 'salad', 'carrot', 'broccoli', 'spinach', 'tomato', 'onion', 'garlic', 'pepper', 'cucumber', 'lettuce']
+    if any(keyword in food_name_lower for keyword in vitamin_keywords):
+        return 'vitamins'
+    
+    # Default to carbohydrates if no match
+    return 'carbohydrates'
 
 def _mask_key(key: str) -> str:
     if not key:
@@ -33,8 +55,27 @@ def tracker_dashboard(request, update_id=None):
         .order_by('-date')
     )
     
+    # 2.5. Fetch nutrition breakdown for today's pie chart
+    nutrition_data = (
+        today_logs.values('category')
+        .annotate(category_total=Sum('calories'))
+        .order_by('category')
+    )
+    
     # 3. Fetch All Logs (To list individual meals under the daily totals)
     all_logs = CalorieLog.objects.filter(user=request.user).order_by('-date', '-id')
+    
+    # 3.5. Prepare nutrition data for each day in history
+    history_nutrition = {}
+    for day in history_summary:
+        day_logs = all_logs.filter(date=day['date'])
+        day_nutrition = (
+            day_logs.values('category')
+            .annotate(category_total=Sum('calories'))
+            .order_by('category')
+        )
+        # Convert queryset to list of dicts and format date as string
+        history_nutrition[str(day['date'])] = list(day_nutrition)
 
     # 4. Check if this is a new account (no calorie logs at all)
     is_new_user = not CalorieLog.objects.filter(user=request.user).exists()
@@ -46,6 +87,9 @@ def tracker_dashboard(request, update_id=None):
         form = CalorieForm(request.POST, instance=instance)
         if form.is_valid():
             new_log = form.save(commit=False)
+            # Auto-categorize if no category is selected
+            if not new_log.category or new_log.category == 'carbohydrates':
+                new_log.category = categorize_food(new_log.food_name)
             new_log.user = request.user 
             new_log.save()             
             return redirect('dashboard')
@@ -70,6 +114,8 @@ def tracker_dashboard(request, update_id=None):
         'form': form,
         'editing': instance,
         'is_new_user': is_new_user,
+        'nutrition_data': nutrition_data,
+        'history_nutrition': json.dumps(history_nutrition),
         'mpesa_token': mpesa_token,
         'mpesa_token_error': mpesa_token_error,
     })
@@ -96,6 +142,54 @@ def signup(request):
 
 def products(request):
     return render(request, 'health/products.html')
+
+def community(request):
+    return render(request, 'health/community.html')
+
+def mindfuel(request):
+    return render(request, 'health/mindfuel.html')
+
+@login_required
+def profile(request):
+    # Calculate user statistics
+    user_logs = CalorieLog.objects.filter(user=request.user)
+    total_logs = user_logs.count()
+    total_calories = user_logs.aggregate(Sum('calories'))['calories__sum'] or 0
+    
+    # Calculate active days (days with at least one log)
+    active_days = user_logs.values('date').distinct().count()
+    
+    # Calculate average daily calories
+    if active_days > 0:
+        avg_daily = round(total_calories / active_days)
+    else:
+        avg_daily = 0
+    
+    # Find best day (highest calorie count)
+    best_day_data = user_logs.values('date').annotate(day_total=Sum('calories')).order_by('-day_total').first()
+    best_day = best_day_data['day_total'] if best_day_data else 0
+    
+    # Calculate current streak (consecutive days with logs)
+    from datetime import datetime, timedelta
+    today = date.today()
+    streak = 0
+    current_date = today
+    
+    while streak < 365:  # Limit to reasonable streak length
+        if user_logs.filter(date=current_date).exists():
+            streak += 1
+            current_date -= timedelta(days=1)
+        else:
+            break
+    
+    return render(request, 'health/profile.html', {
+        'total_logs': total_logs,
+        'total_calories': total_calories,
+        'active_days': active_days,
+        'avg_daily': avg_daily,
+        'best_day': best_day,
+        'streak': streak,
+    })
 
 def contact(request):
     return render(request, 'health/contacts.html')

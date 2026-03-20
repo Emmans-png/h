@@ -1,0 +1,366 @@
+{% load static %}
+{% include 'health/navbar.html' %}
+<style>
+    body { 
+        background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;        
+        color: white; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    .container { padding: 40px; max-width: 1000px; margin: 0 auto; }
+    
+    .profile-header {
+        background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(229, 9, 20, 0.05) 100%);
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        border-radius: 12px;
+        padding: 40px;
+        text-align: center;
+        margin-bottom: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: #E50914;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 48px;
+        font-weight: bold;
+        color: white;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
+    }
+    
+    .profile-header h1 {
+        font-size: 2.5rem;
+        margin: 0 0 10px 0;
+        color: white;
+    }
+    
+    .profile-header p {
+        color: #b3b3b3;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    .profile-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+    
+    .profile-section {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .profile-section h2 {
+        color: #E50914;
+        margin: 0 0 25px 0;
+        font-size: 1.5rem;
+        border-bottom: 2px solid rgba(229, 9, 20, 0.3);
+        padding-bottom: 10px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        color: #E50914;
+        margin-bottom: 8px;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        background: #222;
+        border: 1px solid #444;
+        color: white;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus {
+        outline: none;
+        border-color: #E50914;
+        box-shadow: 0 0 10px rgba(229, 9, 20, 0.3);
+    }
+    
+    .form-group input:disabled {
+        background: #1a1a1a;
+        color: #666;
+        cursor: not-allowed;
+    }
+    
+    .btn-primary {
+        background: #E50914;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-right: 10px;
+    }
+    
+    .btn-primary:hover {
+        background: #ff0a16;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(229, 9, 20, 0.4);
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        color: #E50914;
+        border: 1px solid #E50914;
+        padding: 12px 25px;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .btn-secondary:hover {
+        background: #E50914;
+        color: white;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .stat-card {
+        background: rgba(229, 9, 20, 0.1);
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #E50914;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        color: #b3b3b3;
+        font-size: 14px;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #333;
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        color: #b3b3b3;
+        font-size: 14px;
+    }
+    
+    .info-value {
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+    }
+    
+    .success-message {
+        background: rgba(46, 204, 113, 0.1);
+        border: 1px solid #2ecc71;
+        color: #2ecc71;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        text-align: center;
+        display: none;
+    }
+    
+    @media (max-width: 768px) {
+        .profile-content {
+            grid-template-columns: 1fr;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container">
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <div class="profile-avatar">{{ user.username|first|upper }}</div>
+        <h1>{{ user.username|title }}</h1>
+        <p>Member since {{ user.date_joined|date:"F Y" }}</p>
+    </div>
+    
+    <!-- Profile Content -->
+    <div class="profile-content">
+        <!-- Edit Profile Section -->
+        <div class="profile-section">
+            <h2>📝 Edit Profile</h2>
+            <div class="success-message" id="successMessage">
+                Profile updated successfully! ✅
+            </div>
+            
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" value="{{ user.username }}" disabled>
+                    <small style="color: #666; font-size: 12px;">Username cannot be changed</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" value="{{ user.email }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" value="{{ user.first_name }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" value="{{ user.last_name }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <input type="text" id="bio" name="bio" placeholder="Tell us about yourself..." style="height: 80px; resize: vertical;">
+                </div>
+                
+                <button type="button" class="btn-primary" onclick="updateProfile()">Save Changes</button>
+                <button type="button" class="btn-secondary" onclick="resetForm()">Cancel</button>
+            </form>
+        </div>
+        
+        <!-- Account Info Section -->
+        <div class="profile-section">
+            <h2>📊 Account Information</h2>
+            
+            <div class="info-item">
+                <span class="info-label">Account Status</span>
+                <span class="info-value">✅ Active</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Member Since</span>
+                <span class="info-value">{{ user.date_joined|date:"M d, Y" }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Last Login</span>
+                <span class="info-value">{{ user.last_login|date:"M d, Y H:i" }}</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Calorie Logs</span>
+                <span class="info-value">{{ total_logs|default:"0" }} entries</span>
+            </div>
+            
+            <div class="info-item">
+                <span class="info-label">Current Streak</span>
+                <span class="info-value">🔥 {{ streak|default:"0" }} days</span>
+            </div>
+            
+            <h2 style="margin-top: 40px;">📈 Your Stats</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_calories|default:"0" }}</div>
+                    <div class="stat-label">Total Calories Logged</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ avg_daily|default:"0" }}</div>
+                    <div class="stat-label">Daily Average</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ best_day|default:"0" }}</div>
+                    <div class="stat-label">Best Day</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">{{ active_days|default:"0" }}</div>
+                    <div class="stat-label">Active Days</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateProfile() {
+        const form = document.getElementById('profileForm');
+        const successMsg = document.getElementById('successMessage');
+        
+        // Simulate profile update (in real app, this would send data to backend)
+        successMsg.style.display = 'block';
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+            successMsg.style.display = 'none';
+        }, 3000);
+        
+        console.log('Profile updated:', {
+            email: document.getElementById('email').value,
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            bio: document.getElementById('bio').value
+        });
+    }
+    
+    function resetForm() {
+        // Reset form to original values
+        document.getElementById('email').value = '{{ user.email }}';
+        document.getElementById('firstName').value = '{{ user.first_name }}';
+        document.getElementById('lastName').value = '{{ user.last_name }}';
+        document.getElementById('bio').value = '';
+    }
+    
+    // Add enter key support for form fields
+    document.querySelectorAll('#profileForm input').forEach(input => {
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                updateProfile();
+            }
+        });
+    });
+</script>

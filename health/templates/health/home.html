@@ -1,5 +1,6 @@
 {% load static %}
 {% include 'health/navbar.html' %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
 <style>
     /* Global Netflix Dark Theme */
     body { 
@@ -17,6 +18,204 @@
 
     .container { padding: 40px; }
     .main-layout { display: flex; gap: 30px; align-items: flex-start; }
+    
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .container { padding: 20px; }
+        .main-layout { gap: 20px; }
+        .left-nav { flex: 0.7; }
+        .sidebar { flex: 0.8; }
+    }
+    
+    @media (max-width: 992px) {
+        .main-layout { flex-direction: column; }
+        .left-nav { 
+            flex: 1; 
+            height: auto; 
+            margin-bottom: 20px;
+            order: 2;
+        }
+        .content-area { 
+            flex: 1; 
+            order: 1;
+        }
+        .sidebar { 
+            flex: 1; 
+            height: auto; 
+            order: 3;
+        }
+        .today-grid { 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .container { padding: 15px; }
+        .today-grid { 
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+            gap: 10px;
+        }
+        .food-card { padding: 15px; }
+        .side-drawer { width: 90%; }
+        .review-drawer { width: 90%; }
+        .modal-content { 
+            width: 95%; 
+            padding: 20px;
+            margin: 10% auto;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .container { padding: 10px; }
+        .today-grid { 
+            grid-template-columns: 1fr; 
+        }
+        .content-area h2 { font-size: 1.5rem; }
+        .nav-section { padding: 15px; }
+        .left-nav { padding: 15px; }
+        .sidebar { padding: 15px; }
+        .chart-container { padding: 15px; }
+    }
+    
+    /* Zoom and high DPI support */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        .food-card, .nav-section, .sidebar, .left-nav {
+            border-width: 0.5px;
+        }
+    }
+    
+    /* Responsive Navigation Buttons */
+    @media (max-width: 768px) {
+        .left-nav a, .left-nav button {
+            padding: 12px 15px !important;
+            font-size: 13px !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .left-nav a, .left-nav button {
+            padding: 10px 12px !important;
+            font-size: 12px !important;
+        }
+    }
+    
+    /* Responsive Action Buttons */
+    @media (max-width: 768px) {
+        .content-area button {
+            padding: 8px 15px !important;
+            font-size: 12px !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .content-area button {
+            padding: 6px 12px !important;
+            font-size: 11px !important;
+        }
+    }
+    
+    /* Flexible text sizing */
+    @media (max-width: 992px) {
+        body { font-size: 14px; }
+    }
+    
+    @media (max-width: 768px) {
+        body { font-size: 13px; }
+    }
+    
+    @media (max-width: 576px) {
+        body { font-size: 12px; }
+    }
+    
+    /* Responsive Welcome Screen */
+    @media (max-width: 768px) {
+        .container div[style*="Welcome"] {
+            padding: 40px 20px !important;
+        }
+        .container div[style*="Welcome"] h1 {
+            font-size: 2rem !important;
+        }
+        .container div[style*="Welcome"] p {
+            font-size: 1rem !important;
+        }
+        .container div[style*="Welcome"] button {
+            padding: 15px 30px !important;
+            font-size: 1rem !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .container div[style*="Welcome"] {
+            padding: 30px 15px !important;
+        }
+        .container div[style*="Welcome"] h1 {
+            font-size: 1.5rem !important;
+        }
+        .container div[style*="Welcome"] p {
+            font-size: 0.9rem !important;
+        }
+        .container div[style*="Welcome"] button {
+            padding: 12px 25px !important;
+            font-size: 0.9rem !important;
+            width: 100% !important;
+        }
+    }
+    
+    /* Responsive Header Actions */
+    @media (max-width: 768px) {
+        .content-area > div[style*="flex"] {
+            flex-direction: column !important;
+            gap: 15px !important;
+            align-items: stretch !important;
+        }
+        .content-area > div[style*="flex"] > div[style*="flex"] {
+            justify-content: center !important;
+            flex-wrap: wrap !important;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .content-area > div[style*="flex"] > div[style*="flex"] {
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+        .content-area > div[style*="flex"] > div[style*="flex"] button {
+            width: 100% !important;
+        }
+    }
+    
+    /* LEFT NAVIGATION SIDEBAR */
+    .left-nav {
+        flex: 0.8;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 25px;
+        border-radius: 8px;
+        height: 85vh;
+        overflow-y: auto;
+        box-shadow: 5px 0 20px rgba(0,0,0,0.7);
+        border-right: 3px solid #E50914;
+    }
+    
+    .nav-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        background: rgba(229, 9, 20, 0.1);
+        border-radius: 8px;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .nav-section:hover {
+        background: rgba(229, 9, 20, 0.2);
+        transform: translateY(-2px);
+    }
+    
+    .nav-section h3 {
+        color: #E50914;
+        margin: 0 0 15px 0;
+        font-size: 1.1rem;
+        font-weight: bold;
+    }
     
     /* LEFT SIDE: Main Feed */
     .content-area { flex: 3; }
@@ -70,7 +269,7 @@
     }
 
     /* Drawer Form Inputs */
-    .side-drawer input {
+    .side-drawer input, .side-drawer select {
         width: 100%;
         padding: 12px;
         margin: 10px 0 20px 0;
@@ -78,6 +277,15 @@
         border: 1px solid #444;
         color: white;
         border-radius: 4px;
+    }
+    
+    .side-drawer select {
+        cursor: pointer;
+    }
+    
+    .side-drawer select option {
+        background: #222;
+        color: white;
     }
     /* Left Side Review Drawer */
 .review-drawer {
@@ -98,9 +306,142 @@
 
 .chart-container {
     background: #181818;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
     margin-top: 20px;
+    border: 1px solid #333;
+}
+
+.nutrition-chart {
+    height: 300px;
+    position: relative;
+}
+
+/* Community Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    margin: 5% auto;
+    padding: 40px;
+    border: 2px solid #E50914;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(229, 9, 20, 0.3);
+    animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-btn {
+    color: #E50914;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close-btn:hover {
+    color: #fff;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #E50914;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    background: #222;
+    border: 1px solid #444;
+    color: white;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+.btn-primary {
+    background: #E50914;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary:hover {
+    background: #ff0a16;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(229, 9, 20, 0.4);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #E50914;
+    border: 1px solid #E50914;
+    padding: 12px 25px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.btn-secondary:hover {
+    background: #E50914;
+    color: white;
+}
+
+.wise-words {
+    background: linear-gradient(135deg, rgba(229, 9, 20, 0.1) 0%, rgba(229, 9, 20, 0.05) 100%);
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #E50914;
+    font-style: italic;
+    margin-top: 15px;
+}
+
+.wise-words p {
+    margin: 0;
+    color: #e0e0e0;
+    line-height: 1.6;
+}
+
+.wise-words .author {
+    text-align: right;
+    margin-top: 10px;
+    color: #E50914;
+    font-weight: bold;
+    font-style: normal;
 }
 
 </style>
@@ -142,6 +483,38 @@
 
 <div class="container">
     <div class="main-layout">
+        <!-- LEFT NAVIGATION SIDEBAR -->
+        <div class="left-nav">
+            <!-- Profile Section -->
+            <div style="margin-bottom: 30px;">
+                <a href="{% url 'profile' %}" style="text-decoration: none; display: flex; align-items: center; padding: 15px; background: rgba(229, 9, 20, 0.1); border-radius: 8px; border: 1px solid rgba(229, 9, 20, 0.3); transition: background 0.3s ease;" 
+                   onmouseover="this.style.background='rgba(229, 9, 20, 0.2)';" 
+                   onmouseout="this.style.background='rgba(229, 9, 20, 0.1)';">
+                    <div style="width: 40px; height: 40px; background: #E50914; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                        <span style="color: white; font-weight: bold; font-size: 16px;">{{ user.username|first|upper }}</span>
+                    </div>
+                    <div>
+                        <div style="color: white; font-weight: bold; font-size: 14px;">{{ user.username|title }}</div>
+                        <div style="color: #b3b3b3; font-size: 12px;">View Profile</div>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div>
+                <a href="{% url 'community' %}" style="width: 100%; padding: 15px 20px; margin-bottom: 12px; display: block; text-align: center; font-size: 14px; border-radius: 6px; background: transparent; color: #E50914; text-decoration: none; font-weight: bold; border: 2px solid #E50914; transition: all 0.3s ease; cursor: pointer;"
+                   onmouseover="this.style.background='#E50914'; this.style.color='white';" 
+                   onmouseout="this.style.background='transparent'; this.style.color='#E50914';">
+                    🌟 Community
+                </a>
+                <a href="{% url 'mindfuel' %}" style="width: 100%; padding: 15px 20px; display: block; text-align: center; font-size: 14px; border-radius: 6px; background: transparent; color: #E50914; text-decoration: none; font-weight: bold; border: 2px solid #E50914; transition: all 0.3s ease; cursor: pointer;" 
+                   onmouseover="this.style.background='#E50914'; this.style.color='white';" 
+                   onmouseout="this.style.background='transparent'; this.style.color='#E50914';">
+                    ⚡ MindFuel
+                </a>
+            </div>
+        </div>
+        
         <!-- MAIN CONTENT -->
         <div class="content-area">
            
@@ -236,6 +609,30 @@
                 <p style="color:#666;">No activity today. Start logging to fill your feed!</p>
                 {% endfor %}
             </div>
+            
+            <!-- Nutrition Pie Chart -->
+            <div class="chart-container">
+                <h3 style="color: #E50914; margin-bottom: 15px;">Today's Nutrition Breakdown</h3>
+                <div class="nutrition-chart">
+                    <canvas id="nutritionChart"></canvas>
+                </div>
+                
+                <!-- Historical Small Pie Charts -->
+                {% if history_summary %}
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;">
+                    <h4 style="color: #E50914; margin-bottom: 15px; font-size: 1rem;">Recent Days Nutrition</h4>
+                    <div style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 0;">
+                        {% for day in history_summary|slice:":5" %}
+                            <div style="flex-shrink: 0; text-align: center;">
+                                <canvas id="historyChart{{ forloop.counter }}" width="60" height="60" style="max-width: 60px; max-height: 60px;"></canvas>
+                                <div style="margin-top: 5px; font-size: 10px; color: #b3b3b3;">{{ day.date|date:"M d" }}</div>
+                                <div style="font-size: 9px; color: #E50914; font-weight: bold;">{{ day.day_total }} kcal</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
 
         <!-- SIDEBAR -->
@@ -247,6 +644,7 @@
                         <span class="history-date" style="font-size: 14px;">{{ day.date|date:"M d, Y" }}</span>
                         <span style="color: #E50914; font-weight: bold; font-size: 12px;">Total: {{ day.day_total }} kcal</span>
                     </div>
+                    
                     <div style="margin-top: 10px; padding-left: 10px;">
                         {% for item in all_logs %}
                             {% if item.date == day.date %}
@@ -261,6 +659,47 @@
             {% empty %}
                 <p style="color: #444; font-size: 12px;">No previous history found.</p>
             {% endfor %}
+        </div>
+    </div>
+
+    <!-- COMMUNITY PROMOTION SECTION -->
+    <div style="margin-top: 40px; padding: 30px; background: linear-gradient(135deg, rgba(229, 9, 20, 0.1) 0%, rgba(229, 9, 20, 0.05) 100%); border-radius: 12px; border: 1px solid rgba(229, 9, 20, 0.3); text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <span style="font-size: 2.5rem; margin-right: 15px;">🌟</span>
+            <h2 style="color: #E50914; font-size: 2rem; margin: 0; font-weight: 700;">Join Our Community</h2>
+        </div>
+        <p style="color: #e0e0e0; font-size: 1.1rem; margin-bottom: 15px; line-height: 1.6;">
+            Connect with fellow calorie trackers, share your journey, get motivation, and celebrate victories together!
+        </p>
+        <p style="color: #b3b3b3; font-size: 14px; margin-bottom: 25px;">
+            Share recipes, workout tips, and success stories with a supportive community that understands your goals.
+        </p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'community' %}" style="background: #E50914; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: all 0.3s ease; display: inline-block;">
+                Join Community
+            </a>
+            <button onclick="this.parentElement.style.display='none'; this.parentElement.previousElementSibling.style.display='none';" style="background: transparent; color: #E50914; border: 1px solid #E50914; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">
+                Create New Community
+            </button>
+        </div>
+    </div>
+
+    <!-- MINDFUEL PROMOTION SECTION -->
+    <div style="margin-top: 30px; padding: 30px; background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 107, 53, 0.05) 100%); border-radius: 12px; border: 1px solid rgba(255, 107, 53, 0.3); text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <span style="font-size: 2.5rem; margin-right: 15px;">⚡</span>
+            <h2 style="color: #FF6B35; font-size: 2rem; margin: 0; font-weight: 700;">Fuel Your Mind</h2>
+        </div>
+        <p style="color: #e0e0e0; font-size: 1.1rem; margin-bottom: 15px; line-height: 1.6;">
+            Feeling down? Remember, every step forward is progress, no matter how small. Your health journey is uniquely yours.
+        </p>
+        <p style="color: #b3b3b3; font-size: 14px; margin-bottom: 25px;">
+            Track your wellbeing, celebrate small victories, and find motivation through personalized insights that lift your spirit.
+        </p>
+        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+            <a href="{% url 'mindfuel' %}" style="background: #FF6B35; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; transition: all 0.3s ease; display: inline-block;">
+                Get Inspired
+            </a>
         </div>
     </div>
 </div>
@@ -323,6 +762,112 @@
                     x: { grid: { display: false }, ticks: { color: '#fff' } }
                 },
                 plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // NUTRITION PIE CHART
+    if (typeof Chart !== 'undefined') {
+        const nutritionCtx = document.getElementById('nutritionChart').getContext('2d');
+        const nutritionLabels = [{% for item in nutrition_data %}"{{ item.category|title }}",{% endfor %}];
+        const nutritionValues = [{% for item in nutrition_data %}{{ item.category_total }},{% endfor %}];
+        
+        if (nutritionValues.length > 0 && nutritionValues.some(val => val > 0)) {
+            new Chart(nutritionCtx, {
+                type: 'pie',
+                data: {
+                    labels: nutritionLabels,
+                    datasets: [{
+                        data: nutritionValues,
+                        backgroundColor: [
+                            '#E50914',  // Red for Carbohydrates
+                            '#FF6B35',  // Orange for Proteins  
+                            '#4ECDC4',  // Teal for Vitamins
+                        ],
+                        borderColor: '#1a1a1a',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#fff',
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return context.label + ': ' + context.parsed + ' kcal (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            // Show message when no data
+            nutritionCtx.canvas.parentNode.innerHTML = '<p style="color: #666; text-align: center; padding: 40px;">No nutrition data available for today. Start logging meals to see your breakdown!</p>';
+        }
+    }
+
+    // SMALL HORIZONTAL PIE CHARTS FOR RECENT DAYS
+    if (typeof Chart !== 'undefined') {
+        const historyData = {{ history_nutrition|safe }};
+        const historyDays = [{% for day in history_summary|slice:":5" %}"{{ day.date|date:'Y-m-d' }}",{% endfor %}];
+        
+        historyDays.forEach((dateStr, index) => {
+            const canvas = document.getElementById('historyChart' + (index + 1));
+            if (canvas && historyData[dateStr]) {
+                const ctx = canvas.getContext('2d');
+                const dayData = historyData[dateStr];
+                
+                if (dayData && dayData.length > 0) {
+                    const labels = dayData.map(item => item.category.charAt(0).toUpperCase() + item.category.slice(1));
+                    const data = dayData.map(item => item.category_total);
+                    
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: [
+                                    '#E50914',  // Red for Carbohydrates
+                                    '#FF6B35',  // Orange for Proteins  
+                                    '#4ECDC4',  // Teal for Vitamins
+                                ],
+                                borderColor: '#1a1a1a',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: false,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                            return context.label + ': ' + context.parsed + ' kcal (' + percentage + '%)';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
             }
         });
     }

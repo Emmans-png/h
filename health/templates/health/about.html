@@ -1,26 +1,160 @@
-{% include "health/navbar.html" %}
-
+{% load static %}
+{% include 'health/navbar.html' %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-    body {
-        background-color: #141414;
-        color: white;
+    /* Global Netflix Dark Theme */
+    body { 
+        background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;        
+        color: white; 
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         margin: 0;
         padding: 0;
+        overflow-x: hidden;
+        line-height: 1.6;
+    }
+    
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 60px 40px;
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 50px;
+        position: relative;
+    }
+    
+    .page-header h1 {
+        color: #E50914;
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        text-shadow: 0 4px 20px rgba(229, 9, 20, 0.3);
+    }
+    
+    .page-header::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(90deg, #E50914, #ff0a16);
+        border-radius: 2px;
+    }
+    
+    .content-section {
+        background: linear-gradient(135deg, rgba(26, 26, 26, 0.9) 0%, rgba(45, 45, 45, 0.9) 100%);
+        border-radius: 16px;
+        padding: 40px;
+        margin-bottom: 30px;
+        border: 1px solid rgba(229, 9, 20, 0.2);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+    }
+    
+    .content-section p {
+        font-size: 1.3rem;
+        line-height: 1.8;
+        color: #e0e0e0;
+        margin-bottom: 20px;
+        font-weight: 300;
+    }
+    
+    .highlight {
+        color: #E50914;
+        font-weight: 600;
+    }
+    
+    .mission-statement {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: #ffffff;
+        text-align: center;
+        margin: 30px 0;
+        padding: 20px;
+        background: rgba(229, 9, 20, 0.1);
+        border-radius: 12px;
+        border-left: 4px solid #E50914;
+    }
+    
+    .cta-section {
+        text-align: center;
+        margin-top: 40px;
+        padding: 30px;
+        background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(229, 9, 20, 0.05) 100%);
+        border-radius: 12px;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+    
+    .cta-section p {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #ffffff;
+        margin: 0;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .container {
+            padding: 40px 20px;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+        }
+        
+        .content-section {
+            padding: 30px 20px;
+        }
+        
+        .content-section p {
+            font-size: 1.1rem;
+        }
+        
+        .mission-statement {
+            font-size: 1.3rem;
+        }
+        
+        .cta-section p {
+            font-size: 1.2rem;
+        }
     }
 </style>
-<div class="container" style="padding-top: 30px; padding-left: 30px;">
-    <h1 style="color: red;">About Us</h1>
-    <p>
-        Welcome to Health Tracker, your ultimate companion for a healthier lifestyle!
-    </p>
-    <p>
-        At Health Tracker, we are passionate about empowering individuals to take control of their health and wellness. Our mission is to provide you with the tools and insights you need to make informed decisions about your well-being.
-    </p>
-    <p>
-        Whether you're looking to track your fitness goals, monitor your nutrition, or simply stay motivated on your health journey, Health Tracker is here to support you every step of the way.
-    </p>
-    <p>
-        Join our community of health enthusiasts and start your journey towards a healthier, happier you today!
-    </p>
+<div class="container">
+    <div class="page-header">
+        <h1>About Us</h1>
+    </div>
+    
+    <div class="content-section">
+        <p>
+            Welcome to <span class="highlight">Health Tracker</span>, your ultimate companion for a healthier lifestyle!
+        </p>
+        
+        <div class="mission-statement">
+            "Empowering individuals to take control of their health and wellness through intelligent tracking and insights."
+        </div>
+        
+        <p>
+            At Health Tracker, we are <span class="highlight">passionate</span> about empowering individuals to take control of their health and wellness. Our mission is to provide you with the <span class="highlight">tools and insights</span> you need to make informed decisions about your well-being.
+        </p>
+        
+        <p>
+            Whether you're looking to track your fitness goals, monitor your nutrition, or simply stay motivated on your health journey, Health Tracker is here to <span class="highlight">support you every step of the way</span>.
+        </p>
+    </div>
+    
+    <div class="cta-section">
+        <p>
+            Join our community of health enthusiasts and start your journey towards a healthier, happier you today!
+        </p>
+    </div>
 </div>

@@ -1,0 +1,385 @@
+{% load static %}
+{% include 'health/navbar.html' %}
+<style>
+    body { 
+        background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;        
+        color: white; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    .container { padding: 40px; max-width: 1000px; margin: 0 auto; }
+    
+    .hero-section {
+        background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(229, 9, 20, 0.05) 100%);
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        border-radius: 12px;
+        padding: 60px 40px;
+        text-align: center;
+        margin-bottom: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    .hero-section h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 0 0 20px 0;
+        color: white;
+        letter-spacing: 2px;
+    }
+    
+    .hero-section .highlight {
+        color: #E50914;
+        font-weight: bold;
+    }
+    
+    .hero-section p {
+        color: #e0e0e0;
+        font-size: 1.2rem;
+        margin: 0 0 30px 0;
+        line-height: 1.8;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .quotes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+    }
+    
+    .quote-card {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 40px 30px;
+        border-radius: 12px;
+        border-left: 4px solid #E50914;
+        position: relative;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .quote-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(229, 9, 20, 0.2);
+        border-left-width: 6px;
+    }
+    
+    .quote-icon {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 3rem;
+        color: rgba(229, 9, 20, 0.2);
+        font-family: Georgia, serif;
+    }
+    
+    .quote-text {
+        font-size: 1.3rem;
+        line-height: 1.6;
+        color: #e0e0e0;
+        font-style: italic;
+        margin: 20px 0 30px 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .quote-author {
+        text-align: right;
+        color: #E50914;
+        font-weight: bold;
+        font-size: 1.1rem;
+        font-style: normal;
+        margin-top: 20px;
+    }
+    
+    .quote-category {
+        display: inline-block;
+        background: rgba(229, 9, 20, 0.2);
+        color: #E50914;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+    }
+    
+    .section-title {
+        color: #E50914;
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin: 60px 0 30px 0;
+        position: relative;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background: #E50914;
+        border-radius: 2px;
+    }
+    
+    .daily-quote {
+        background: linear-gradient(135deg, rgba(229, 9, 20, 0.25) 0%, rgba(229, 9, 20, 0.1) 100%);
+        border: 2px solid rgba(229, 9, 20, 0.4);
+        padding: 50px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 60px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .daily-quote::before {
+        content: '"';
+        position: absolute;
+        top: 20px;
+        left: 30px;
+        font-size: 8rem;
+        color: rgba(229, 9, 20, 0.1);
+        font-family: Georgia, serif;
+    }
+    
+    .daily-quote-text {
+        font-size: 1.8rem;
+        line-height: 1.7;
+        color: white;
+        font-style: italic;
+        margin: 20px 0 30px 0;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .daily-quote-author {
+        color: #E50914;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-top: 20px;
+    }
+    
+    .motivational-tip {
+        background: rgba(46, 204, 113, 0.1);
+        border-left: 4px solid #2ecc71;
+        padding: 25px;
+        border-radius: 8px;
+        margin: 30px 0;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #e0e0e0;
+    }
+    
+    .tip-title {
+        color: #2ecc71;
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+    }
+</style>
+
+<div class="container">
+    <!-- Daily Featured Quote -->
+    <div class="daily-quote">
+        <div class="quote-category">🌟 Daily Inspiration</div>
+        <div class="daily-quote-text">
+            "Take care of your body. It's the only place you have to live."
+        </div>
+        <div class="daily-quote-author">— Jim Rohn</div>
+    </div>
+    
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1><span class="highlight">MindFuel</span> - Daily Ignition</h1>
+        <p>Power up your mind with motivational insights that fuel your wellness journey. Discover the mental energy you need to crush your health goals and transform your life.</p>
+        
+        <div class="motivational-tip">
+            <div class="tip-title">💡 Today's Tip</div>
+            Remember: Every healthy choice is a victory. Small steps lead to big transformations. Celebrate your progress, no matter how small!
+        </div>
+    </div>
+    
+    <!-- Nutrition & Diet Quotes -->
+    <h2 class="section-title">🍎 Nutrition & Diet Wisdom</h2>
+    <div class="quotes-grid">
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Nutrition</div>
+            <div class="quote-text">
+                "Your diet is a bank account. Good food choices are good investments."
+            </div>
+            <div class="quote-author">— Bethenny Frankel</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Healthy Eating</div>
+            <div class="quote-text">
+                "The food you eat can be either the safest and most powerful form of medicine or the slowest form of poison."
+            </div>
+            <div class="quote-author">— Ann Wigmore</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Mindful Eating</div>
+            <div class="quote-text">
+                "One cannot think well, love well, sleep well, if one has not dined well."
+            </div>
+            <div class="quote-author">— Virginia Woolf</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Food Choices</div>
+            <div class="quote-text">
+                "Eat food, not too much, mostly plants."
+            </div>
+            <div class="quote-author">— Michael Pollan</div>
+        </div>
+    </div>
+    
+    <!-- Health & Wellness Quotes -->
+    <h2 class="section-title">💪 Health & Wellness Motivation</h2>
+    <div class="quotes-grid">
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Health Priority</div>
+            <div class="quote-text">
+                "The first wealth is health."
+            </div>
+            <div class="quote-author">— Ralph Waldo Emerson</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Self Care</div>
+            <div class="quote-text">
+                "To keep the body in good health is a duty... otherwise we shall not be able to keep our mind strong and clear."
+            </div>
+            <div class="quote-author">— Buddha</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Wellness Journey</div>
+            <div class="quote-text">
+                "Health is not about the weight you lose, but about the life you gain."
+            </div>
+            <div class="quote-author">— Dr. Josh Axe</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Prevention</div>
+            <div class="quote-text">
+                "An ounce of prevention is worth a pound of cure."
+            </div>
+            <div class="quote-author">— Benjamin Franklin</div>
+        </div>
+    </div>
+    
+    <!-- Motivational & Success Quotes -->
+    <h2 class="section-title">🎯 Motivation & Success Mindset</h2>
+    <div class="quotes-grid">
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Consistency</div>
+            <div class="quote-text">
+                "Success is the sum of small efforts repeated day in and day out."
+            </div>
+            <div class="quote-author">— Robert Collier</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Self Discipline</div>
+            <div class="quote-text">
+                "Discipline is the bridge between goals and accomplishment."
+            </div>
+            <div class="quote-author">— Jim Rohn</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Small Steps</div>
+            <div class="quote-text">
+                "A journey of a thousand miles begins with a single step."
+            </div>
+            <div class="quote-author">— Lao Tzu</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Perseverance</div>
+            <div class="quote-text">
+                "It does not matter how slowly you go as long as you do not stop."
+            </div>
+            <div class="quote-author">— Confucius</div>
+        </div>
+    </div>
+    
+    <!-- Community & Support Quotes -->
+    <h2 class="section-title">🌟 Community & Support</h2>
+    <div class="quotes-grid">
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Together</div>
+            <div class="quote-text">
+                "Alone we can do so little; together we can do so much."
+            </div>
+            <div class="quote-author">— Helen Keller</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Support System</div>
+            <div class="quote-text">
+                "Surround yourself with only people who are going to lift you higher."
+            </div>
+            <div class="quote-author">— Oprah Winfrey</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Shared Journey</div>
+            <div class="quote-text">
+                "If you want to go fast, go alone. If you want to go far, go together."
+            </div>
+            <div class="quote-author">— African Proverb</div>
+        </div>
+        
+        <div class="quote-card">
+            <div class="quote-icon">"</div>
+            <div class="quote-category">Encouragement</div>
+            <div class="quote-text">
+                "We rise by lifting others."
+            </div>
+            <div class="quote-author">— Robert Ingersoll</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add some interactivity - highlight quote on hover
+    document.querySelectorAll('.quote-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-8px) scale(1.02)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(-5px) scale(1)';
+        });
+    });
+</script>

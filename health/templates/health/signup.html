@@ -1,57 +1,331 @@
 {% load static %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
     body{
-        background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("{% static 'images/home.jpg' %}");
+        background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("{% static 'images/home.jpg' %}");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
         background-repeat: no-repeat;
+        min-height: 100vh;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+        padding: 20px 0;
     }
-    input {
-        width: 100%;
-        padding: 12px;
-        margin-bottom: 15px;
-        background: rgb(97, 93, 93) !important;
-        border: none;
-        border-radius: 4px;
-        color: white !important;
+    
+    .signup-container {
+        background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(45, 45, 45, 0.95) 100%);
+        border-radius: 20px;
+        padding: 50px 40px;
+        width: 480px;
+        max-width: 95vw;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(229, 9, 20, 0.3);
+        border: 1px solid rgba(229, 9, 20, 0.2);
+        backdrop-filter: blur(10px);
+        animation: slideUp 0.6s ease-out;
     }
-    .helptext, .errorlist {
-        font-size: 11px;
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .brand-header {
+        text-align: center;
+        margin-bottom: 35px;
+        position: relative;
+    }
+    
+    .brand-header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        background: linear-gradient(45deg, #ffffff, #E50914);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .brand-header .tagline {
         color: #b3b3b3;
+        font-size: 14px;
+        margin-top: 8px;
+        letter-spacing: 1px;
+    }
+    
+    .page-title {
+        color: white;
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 600;
+        font-size: 1.8rem;
+        position: relative;
+    }
+    
+    .page-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #E50914, #ff0a16);
+        border-radius: 2px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #E50914;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 15px 20px;
+        background: rgba(51, 51, 51, 0.8);
+        border: 2px solid transparent;
+        border-radius: 12px;
+        color: white !important;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+    
+    .form-group input::placeholder {
+        color: #666;
+        font-style: italic;
+    }
+    
+    .form-group input:focus {
+        background: rgba(51, 51, 51, 1);
+        border-color: #E50914;
+        box-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .form-group input:hover {
+        background: rgba(51, 51, 51, 0.9);
+        border-color: rgba(229, 9, 20, 0.5);
+    }
+    
+    .helptext, .errorlist {
+        font-size: 12px;
+        color: #ff6b6b;
         list-style: none;
         padding: 0;
-        margin-bottom: 10px;
+        margin: 8px 0 0 0;
+        font-weight: 500;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #E50914 0%, #ff0a16 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
+        margin-top: 20px;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(229, 9, 20, 0.6);
+        background: linear-gradient(135deg, #ff0a16 0%, #E50914 100%);
+    }
+    
+    .btn-primary:active {
+        transform: translateY(-1px);
+    }
+    
+    .divider {
+        text-align: center;
+        margin: 30px 0;
+        position: relative;
+    }
+    
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .divider span {
+        background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(45, 45, 45, 0.95) 100%);
+        padding: 0 20px;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .signin-link {
+        text-align: center;
+        margin-top: 25px;
+    }
+    
+    .signin-link p {
+        color: #b3b3b3;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    
+    .signin-link a {
+        display: inline-block;
+        padding: 12px 30px;
+        background: transparent;
+        border: 2px solid #E50914;
+        color: #E50914;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .signin-link a:hover {
+        background: #E50914;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+    }
+    
+    .password-strength {
+        margin-top: 8px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+    
+    .password-strength-bar {
+        height: 100%;
+        width: 0;
+        transition: all 0.3s ease;
+        border-radius: 2px;
+    }
+    
+    .strength-weak { background: #ff6b6b; width: 33%; }
+    .strength-medium { background: #ffd93d; width: 66%; }
+    .strength-strong { background: #6bcf7f; width: 100%; }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .signup-container {
+            padding: 40px 30px;
+            width: 90vw;
+        }
+        
+        .brand-header h1 {
+            font-size: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+        }
+        
+        .form-group input {
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+        
+        .btn-primary {
+            padding: 15px;
+            font-size: 14px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .signup-container {
+            padding: 30px 20px;
+        }
+        
+        .brand-header h1 {
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+        }
+        
+        .page-title {
+            font-size: 1.3rem;
+        }
     }
 </style>
 
-<div class="container" style="display:flex; justify-content:center; align-items:center; height:85vh;">
-    <div class="card" style="width:400px; padding:60px; color: #a39f9f">
-        <h2 style="margin-bottom:25px; font-weight:bold;"></h2>
-        <div style="border-left: 5px solid #E50914; padding-left: 15px; margin-bottom: 40px;">
-    <h1 style="color: white; font-size: 2.2rem; font-weight: 700; margin: 0; letter-spacing: 2px;">
-        CALORIE <span style="color: #E50914;">TRACKER</span>
-    </h1>
-    <p style="color: #666; font-size: 14px; margin: 0;">Log. Track. Conquer.</p>
-</div>
-                <h2 style="margin-bottom:25px; font-weight:bold;">Sign Up</h2>
+<div class="signup-container">
+    <div class="brand-header">
+        <h1>CALORIE <span style="color: #E50914;">TRACKER</span></h1>
+        <p class="tagline">Log. Track. Conquer.</p>
+    </div>
+    
+    <h2 class="page-title">Create Account</h2>
 
-        <form method="POST">
-            {% csrf_token %}
-            
-            <!-- Django loops through Username, Password 1, and Password 2 -->
-            {{ form.as_p }}
-            
-            <button type="submit" class="btn-netflix" style="padding:15px; margin-top:10px; font-size:16px;">
-                Create Account
-            </button>
-        </form>
+    <form method="POST">
+        {% csrf_token %}
         
-        <div style="margin-top:20px; border-top: 1px solid #333; padding-top:20px;">
-            <span style="color:#737373;">Already have an account?</span>
-            <a href="{% url 'login' %}" style="color:#737373; text-decoration:none; font-weight:bold; margin-left:5px;">
-                Sign In now.
-            </a>
+        <div class="form-group">
+            <label for="id_username">Username</label>
+            {{ form.username }}
         </div>
+        
+        <div class="form-group">
+            <label for="id_password1">Password</label>
+            {{ form.password1 }}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_password2">Confirm Password</label>
+            {{ form.password2 }}
+        </div>
+        
+        <button type="submit" class="btn-primary">Create Account</button>
+    </form>
+    
+    <div class="divider">
+        <span>OR</span>
+    </div>
+    
+    <div class="signin-link">
+        <p>Already have an account?</p>
+        <a href="{% url 'login' %}">Sign In</a>
     </div>
 </div>

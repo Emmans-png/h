@@ -1,0 +1,315 @@
+{% load static %}
+{% include 'health/navbar.html' %}
+<style>
+    body { 
+        background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;        
+        color: white; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    .container { padding: 40px; max-width: 1200px; margin: 0 auto; }
+    
+    .hero-section {
+        background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(229, 9, 20, 0.05) 100%);
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        border-radius: 12px;
+        padding: 80px 60px;
+        text-align: center;
+        margin-bottom: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+    
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin: 0 0 20px 0;
+        color: white;
+        letter-spacing: 2px;
+    }
+    
+    .hero-section .highlight {
+        color: #E50914;
+        font-weight: bold;
+    }
+    
+    .hero-section p {
+        color: #e0e0e0;
+        font-size: 1.3rem;
+        margin: 0 0 40px 0;
+        line-height: 1.8;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .btn-primary {
+        background: #E50914;
+        color: white;
+        border: none;
+        padding: 20px 50px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary:hover {
+        background: #ff0a16;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(229, 9, 20, 0.5);
+        text-decoration: none;
+        color: white;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-top: 60px;
+    }
+    
+    .feature-card {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        padding: 40px 30px;
+        border-radius: 12px;
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        border-color: #E50914;
+        box-shadow: 0 15px 40px rgba(229, 9, 20, 0.3);
+    }
+    
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 20px;
+    }
+    
+    .feature-card h3 {
+        color: #E50914;
+        margin: 0 0 15px 0;
+        font-size: 1.5rem;
+    }
+    
+    .feature-card p {
+        color: #b3b3b3;
+        line-height: 1.6;
+        margin: 0;
+    }
+    
+    /* Community Creation Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+    }
+    
+    .modal-content {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        margin: 5% auto;
+        padding: 40px;
+        border: 2px solid #E50914;
+        width: 90%;
+        max-width: 600px;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(229, 9, 20, 0.3);
+        animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .close-btn {
+        color: #E50914;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    
+    .close-btn:hover {
+        color: #fff;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        color: #E50914;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+    
+    .form-group input, .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        background: #222;
+        border: 1px solid #444;
+        color: white;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    .form-group textarea {
+        height: 100px;
+        resize: vertical;
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        color: #E50914;
+        border: 1px solid #E50914;
+        padding: 12px 25px;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-left: 10px;
+    }
+    
+    .btn-secondary:hover {
+        background: #E50914;
+        color: white;
+    }
+</style>
+
+<!-- Community Creation Modal -->
+<div id="communityModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeCommunityModal()">&times;</span>
+        <h2 style="color: #E50914; margin-bottom: 20px;">Create Your Community</h2>
+        <form id="communityForm">
+            <div class="form-group">
+                <label for="communityName">Community Name</label>
+                <input type="text" id="communityName" name="communityName" placeholder="Enter community name">
+            </div>
+            <div class="form-group">
+                <label for="communityDesc">Description</label>
+                <textarea id="communityDesc" name="communityDesc" placeholder="Describe your community's purpose"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="communityImage">Profile Picture (Optional)</label>
+                <input type="file" id="communityImage" name="communityImage" accept="image/*">
+                <small style="color: #666; font-size: 12px;">You can skip this step</small>
+            </div>
+            <button type="button" class="btn-primary" onclick="createCommunity()">Create Community</button>
+            <button type="button" class="btn-secondary" onclick="skipImage()">Skip & Create</button>
+        </form>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <h1>Join Our <span class="highlight">Wellness Community</span></h1>
+        <p>Feeling left out? You're not alone in this journey. Connect with others who share your health goals, support each other, and celebrate victories together. Your wellness journey is better when shared!</p>
+        <button class="btn-primary" onclick="openCommunityModal()">
+            🌟 Let's Create Your Community
+        </button>
+    </div>
+    
+    <!-- Features Section -->
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">💪</div>
+            <h3>Support & Motivation</h3>
+            <p>Get encouragement from members who understand your challenges and celebrate your progress.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Share Progress</h3>
+            <p>Post your achievements, share meal plans, and inspire others with your wellness journey.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>Group Challenges</h3>
+            <p>Participate in community challenges and competitions that make healthy living fun.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🍎</div>
+            <h3>Recipe Exchange</h3>
+            <p>Discover and share healthy recipes that make nutritious eating delicious and exciting.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">💬</div>
+            <h3>Expert Advice</h3>
+            <p>Access tips from nutritionists and fitness experts within the community.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <h3>Achievement Badges</h3>
+            <p>Earn recognition for your milestones and inspire others with your success stories.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCommunityModal() {
+        document.getElementById('communityModal').style.display = 'block';
+    }
+
+    function closeCommunityModal() {
+        document.getElementById('communityModal').style.display = 'none';
+    }
+
+    function createCommunity() {
+        const name = document.getElementById('communityName').value;
+        const desc = document.getElementById('communityDesc').value;
+        
+        if (!name || !desc) {
+            alert('Please fill in both community name and description.');
+            return;
+        }
+        
+        // Here you would typically send this data to your backend
+        alert('Community "' + name + '" created successfully!');
+        closeCommunityModal();
+        
+        // Reset form
+        document.getElementById('communityForm').reset();
+    }
+
+    function skipImage() {
+        createCommunity();
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('communityModal');
+        if (event.target == modal) {
+            closeCommunityModal();
+        }
+    }
+</script>
