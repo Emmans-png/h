@@ -144,6 +144,61 @@
     <div class="main-layout">
         <!-- MAIN CONTENT -->
         <div class="content-area">
+           
+            {% if is_new_user %}
+            <!-- WELCOME SCREEN FOR NEW USERS -->
+            <div style="
+                background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(229, 9, 20, 0.05) 100%);
+                border: 1px solid rgba(229, 9, 20, 0.3);
+                border-radius: 12px;
+                padding: 60px 40px;
+                text-align: center;
+                margin-bottom: 40px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            ">
+                <h1 style="
+                    font-size: 3rem;
+                    font-weight: 700;
+                    margin: 0 0 15px 0;
+                    color: white;
+                    letter-spacing: 1px;
+                ">
+                    Welcome, <span style="color: #E50914;">{{ user.username|title }}</span>!
+                </h1>
+                <p style="
+                    color: #b3b3b3;
+                    font-size: 1.1rem;
+                    margin: 0 0 30px 0;
+                    line-height: 1.6;
+                ">
+                    Your journey to a healthier lifestyle starts now.
+                    <br>
+                    Log your first meal and track your daily calories.
+                </p>
+                
+                <button onclick="openDrawer()" style="
+                    background: #E50914;
+                    color: white;
+                    border: none;
+                    padding: 18px 50px;
+                    font-size: 1.1rem;
+                    font-weight: bold;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                    box-shadow: 0 6px 20px rgba(229, 9, 20, 0.4);
+                "
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.filter='brightness(1.1)';"
+                onmouseout="this.style.transform='translateY(0)'; this.style.filter='brightness(1)';">
+                    + Add Your First Meal
+                </button>
+            </div>
+            {% else %}
+            <!-- STANDARD DISPLAY FOR EXISTING USERS -->
+            {% endif %}
+
            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div>
                     <h2 style="margin:0;">Today's Meal</h2>

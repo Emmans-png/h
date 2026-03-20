@@ -145,7 +145,7 @@
                     <span class="product-tag">Protein & Recovery</span>
                     <h3 class="product-name">Lean Muscle Pro (KES 1500)</h3>
                     <p class="product-desc">The purest whey isolate for post-workout recovery. Zero sugar, high absorption.</p>
-                    <button class="btn-buy" onclick="pay(1, 'Lean Muscle Pro')">Purchase</button>
+                    <button class="btn-buy" onclick="goToCheckout(this, 1500, 'Lean Muscle Pro')">Purchase</button>
                 </div>
             </div>
 
@@ -156,7 +156,7 @@
                     <span class="product-tag">Hardware</span>
                     <h3 class="product-name">SyncScale 2.0 (KES 1000)</h3>
                     <p class="product-desc">Smart body composition scale that syncs directly with your CalorieTracker dashboard.</p>
-                    <button class="btn-buy" onclick="pay(1, 'SyncScale 2.0')">Purchase</button>
+                    <button class="btn-buy" onclick="goToCheckout(this, 1000, 'SyncScale 2.0')">Purchase</button>
                 </div>
             </div>
 
@@ -167,7 +167,7 @@
                     <span class="product-tag">Wellness</span>
                     <h3 class="product-name">Daily Vitality (KES 2500)</h3>
                     <p class="product-desc">A complete daily multivitamin pack tailored for active individuals tracking their macros.</p>
-                    <button class="btn-buy" onclick="pay(1, 'Daily Vitality Subscription')">Purchase</button>
+                    <button class="btn-buy" onclick="goToCheckout(this, 2500, 'Daily Vitality Subscription')">Purchase</button>
                 </div>
             </div>
             <!-- Product 4 -->
@@ -178,7 +178,7 @@
                     <span class="product-tag">Smart Device</span>
                     <h3 class="product-name">Whoop 5.0 (KES 2500)</h3>
                     <p class="product-desc">A screenless tracker focused on "Strain" and "Recovery." It uses advanced heart rate variability (HRV) data to provide highly personalized calorie burn targets.</p>
-                    <button class="btn-buy" onclick="pay(1, 'Daily Vitality Subscription')">Purchase</button>
+                    <button class="btn-buy" onclick="goToCheckout(this, 2500, 'Whoop 5.0')">Purchase</button>
                 </div>
             </div>
             <!-- Product 5 -->
@@ -187,9 +187,9 @@
                 <div class="product-image">RENPHO </div>
                 <div class="product-info">
                     <span class="product-tag">Wellbeing</span>
-                    <h3 class="product-name">Renpho Smart Food Scale(KES 2500)</h3>
+                    <h3 class="product-name">Renpho Smart Food Scale (KES 2500)</h3>
                     <p class="product-desc">Integrates perfectly for those already using the Renpho Health ecosystem</p>
-                    <button class="btn-buy" onclick="pay(1, 'Daily Vitality Subscription')">Purchase</button>
+                    <button class="btn-buy" onclick="goToCheckout(this, 2500, 'Renpho Smart Food Scale')">Purchase</button>
                 </div>
             </div>
             <!-- Product 6 -->
@@ -200,7 +200,7 @@
                     <span class="product-tag">Nutrion</span>
                     <h3 class="product-name">Etekcity Smart Nutrition Scale (ESN00) (KES 2500)</h3>
                     <p class="product-desc">A top-rated option that uses a massive database (Nutritionix) to provide a breakdown of 19+ nutrients including calories and macros.</p>
-                    <button class="btn-buy" onclick="pay(1, 'Daily Vitality Subscription')">Purchase</button>
+                    <button class="btn-buy" onclick="goToCheckout(this, 2500, 'Etekcity Smart Nutrition Scale')">Purchase</button>
                 </div>
             </div>
 
@@ -208,45 +208,15 @@
     </div>
 
     <script>
-        function pay(amount, productName) {
-            const phoneNumber = prompt(`Enter M-Pesa Number for ${productName} (2547XXXXXXXX):`);
-            
-            if (phoneNumber) {
-                // Find the button that was clicked to show a loading state
-                const btn = event.target;
-                const originalText = btn.innerText;
-                btn.innerText = "PROCESSING...";
-                btn.disabled = true;
-                btn.style.background = "#564d4d";
-
-                fetch('/stk-push/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    },
-                    body: JSON.stringify({
-                        phone: phoneNumber,
-                        amount: amount,
-                        product: productName
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert("STK Push Sent! Please enter your M-Pesa PIN on your phone.");
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("Something went wrong. Please check your backend connection.");
-                })
-                .finally(() => {
-                    // Reset button state
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                    btn.style.background = "#E50914";
-                });
-            }
+        function goToCheckout(button, amount, productName) {
+            const params = new URLSearchParams({
+                product: productName,
+                amount: amount,
+            });
+            window.location.href = `/mpesa/checkout/?${params.toString()}`;
         }
     </script>
 
 </body>
+</html>
+

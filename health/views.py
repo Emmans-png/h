@@ -6,6 +6,18 @@ from .models import CalorieLog
 from .forms import CalorieForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
+from django.conf import settings
+from django.urls import reverse
+
+from .mpesa import mpesa_stk_push, mpesa_access_token_info, _discover_ngrok_callback_url
+
+
+def _mask_key(key: str) -> str:
+    if not key:
+        return ''
+    if len(key) <= 8:
+        return key
+    return f"{key[:4]}...{key[-4:]}"
 
 @login_required(login_url='login')
 def tracker_dashboard(request, update_id=None):
@@ -24,7 +36,10 @@ def tracker_dashboard(request, update_id=None):
     # 3. Fetch All Logs (To list individual meals under the daily totals)
     all_logs = CalorieLog.objects.filter(user=request.user).order_by('-date', '-id')
 
-    # 4. Handle "ADD" and "UPDATE" Actions
+    # 4. Check if this is a new account (no calorie logs at all)
+    is_new_user = not CalorieLog.objects.filter(user=request.user).exists()
+
+    # 5. Handle "ADD" and "UPDATE" Actions
     instance = get_object_or_404(CalorieLog, id=update_id, user=request.user) if update_id else None
     
     if request.method == 'POST':
@@ -37,14 +52,26 @@ def tracker_dashboard(request, update_id=None):
     else:
         form = CalorieForm(instance=instance)
 
-    # 5. Pass everything to the template
+    # 6. Pass everything to the template
+    # Fetch Daraja access token for debugging/display
+    mpesa_token = None
+    mpesa_token_error = None
+    token_info = mpesa_access_token_info()
+    if token_info.get('success'):
+        mpesa_token = token_info.get('access_token')
+    else:
+        mpesa_token_error = token_info.get('message')
+
     return render(request, 'health/home.html', {
         'logs': today_logs,
         'total': total_calories,
-        'history_summary': history_summary, # Used for the day headers
-        'all_logs': all_logs,               # Used for the meal lists
+        'history_summary': history_summary,
+        'all_logs': all_logs,
         'form': form,
         'editing': instance,
+        'is_new_user': is_new_user,
+        'mpesa_token': mpesa_token,
+        'mpesa_token_error': mpesa_token_error,
     })
 
 @login_required
@@ -56,9 +83,12 @@ def signup(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Account created! You can now log in.")
-            return redirect('login')
+            user = form.save()
+            # Auto-login the new user
+            from django.contrib.auth import authenticate, login
+            login(request, user)
+            messages.success(request, "Account created! Welcome to CalorieTracker.")
+            return redirect('dashboard')
     else:
         form = UserCreationForm()
     return render(request, 'health/signup.html', {'form': form})
@@ -76,18 +106,102 @@ def about(request):
 
 import json
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
-@csrf_exempt # Only for testing; better to use CSRF tokens in production
+@login_required
+def mpesa_checkout(request):
+    """Render an MPESA checkout page and trigger an STK Push when the form is submitted."""
+    product = request.GET.get('product', '').strip()
+    amount = request.GET.get('amount', '').strip()
+
+    # Ensure we always have a product and amount to avoid an empty checkout screen
+    if not product or not amount:
+        return redirect('products')
+
+    callback_url = getattr(settings, 'MPESA_CALLBACK_URL', '') or request.build_absolute_uri(reverse('mpesa_callback'))
+
+    # If callback is a local URL, try auto-detecting ngrok so the user doesn't need to manually
+    # copy/paste a URL (if ngrok is running on 127.0.0.1:4040).
+    if callback_url.startswith('http://127.0.0.1') or callback_url.startswith('http://localhost'):
+        ngrok_url = _discover_ngrok_callback_url(path='/mpesa/callback/')
+        if ngrok_url:
+            callback_url = ngrok_url
+
+    token_info = mpesa_access_token_info()
+
+    context = {
+        'product': product,
+        'amount': amount,
+        'phone': request.POST.get('phone', '').strip() if request.method == 'POST' else '',
+        'success': None,
+        'message': None,
+        'raw': None,
+        'mpesa_callback_url': callback_url,
+        'mpesa_env': getattr(settings, 'MPESA_ENVIRONMENT', 'sandbox'),
+        'mpesa_key_preview': _mask_key(getattr(settings, 'MPESA_CONSUMER_KEY', '')),
+        'mpesa_secret_preview': _mask_key(getattr(settings, 'MPESA_CONSUMER_SECRET', '')),
+        'mpesa_token_ok': token_info.get('success'),
+        'mpesa_token_message': token_info.get('message'),
+    }
+
+    if request.method == 'POST':
+        result = mpesa_stk_push(
+            phone=context['phone'],
+            amount=amount,
+            account_reference=product,
+            transaction_desc=f"Purchase: {product}",
+            callback_url=callback_url,
+        )
+        context['success'] = result.get('success', False)
+        context['message'] = result.get('message')
+        context['raw'] = result.get('data')
+        # show the actual URL used when we auto-discover ngrok or other overrides
+        context['mpesa_callback_url'] = result.get('used_callback_url') or callback_url
+
+    return render(request, 'health/mpesa_checkout.html', context)
+
+@login_required
 def initiate_stk_push(request):
-    if request.method == "POST":
+    """API endpoint used by the frontend to trigger an STK Push via Daraja."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'Error', 'message': 'Invalid request method'}, status=400)
+
+    try:
         data = json.loads(request.body)
-        phone = data.get('phone')
-        amount = data.get('amount')
-        
-        # This is where your Daraja Python logic goes.
-        # For now, we return a success message to stop the error.
-        print(f"Requesting {amount} KES from {phone}")
-        
-        return JsonResponse({"status": "Success", "message": "STK Push Initiated"})
-    return JsonResponse({"status": "Error", "message": "Invalid Request"}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'Error', 'message': 'Invalid JSON'}, status=400)
+
+    phone = (data.get('phone') or '').strip()
+    amount = data.get('amount')
+    product = data.get('product', 'Item')
+    callback_url = data.get('callback_url') or request.build_absolute_uri(reverse('mpesa_callback'))
+
+    result = mpesa_stk_push(
+        phone=phone,
+        amount=amount,
+        account_reference=product,
+        transaction_desc=f"Purchase: {product}",
+        callback_url=callback_url,
+    )
+
+    if result.get('success'):
+        return JsonResponse({'status': 'Success', 'message': result.get('message', ''), 'data': result.get('data')})
+
+    return JsonResponse({'status': 'Error', 'message': result.get('message', ''), 'data': result.get('data')}, status=400)
+
+@csrf_exempt
+def mpesa_callback(request):
+    """Handle Daraja callback from the STK Push request."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'Error', 'message': 'Invalid request method'}, status=405)
+
+    try:
+        payload = json.loads(request.body)
+    except json.JSONDecodeError:
+        payload = request.body.decode(errors='ignore')
+
+    # TODO: Persist callback payload to database/logs for reconciliation
+    print('MPESA Callback payload:', payload)
+
+    return JsonResponse({'status': 'Success'})

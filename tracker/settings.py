@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -123,3 +124,14 @@ STATICFILES_DIRS = [
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+# M-Pesa Daraja configuration
+# NOTE: Get your credentials from https://developer.safaricom.co.ke/
+# For testing, register an app and get Consumer Key/Secret
+# Sandbox ShortCode & PassKey are provided by Safaricom
+MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')  # sandbox or production
+MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', 'm3R5oudfih4BaieFj0vmxCyky52v7VoMwWfhdGEXAmCj5TRL')
+MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'Yctkih9FcJV3OvdqOEFuOikuCnXU8RFzsVLVRoFojz2N7FjyQdfPaGNjXhe5wDVd')
+MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '174379')  # Sandbox test shortcode
+MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd1a503b00')  # Sandbox test passkey
+MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', '')  # Optional - auto-built from request if empty
