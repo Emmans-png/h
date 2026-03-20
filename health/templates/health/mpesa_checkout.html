@@ -194,9 +194,16 @@
             <span>Amount: <strong>KES {{ amount }}</strong></span>
         </div>
 
-        {% if message and success %}
-            <div class="status success">
+        {% if message %}
+            <div class="status {% if success %}success{% else %}error{% endif %}">
                 {{ message }}
+            </div>
+        {% endif %}
+
+        {% if not success and message %}
+            <div class="raw">
+                <strong>Technical Details:</strong><br>
+                {{ raw|default:"No additional details available" }}
             </div>
         {% endif %}
 
@@ -208,12 +215,104 @@
             <label for="phone">Phone number</label>
             <input id="phone" name="phone" type="tel" placeholder="2547XXXXXXXX" value="{{ phone }}" required>
 
-            <button type="submit" class="btn-pay">Pay KES {{ amount }}</button>
+            <button type="submit" class="btn-pay" {% if success %}disabled{% endif %}>
+                {% if success %}Payment Initiated{% else %}Pay KES {{ amount }}{% endif %}
+            </button>
         </form>
+
+        {% if mpesa_token_ok %}
+            <div style="margin-top: 20px; padding: 12px; background: rgba(46, 192, 94, 0.1); border-radius: 8px; font-size: 0.85rem; color: #b3b3b3;">
+                ✓ M-Pesa API connection working<br>
+                Environment: {{ mpesa_env }}<br>
+                Callback URL: {{ mpesa_callback_url }}
+            </div>
+        {% else %}
+            <div style="margin-top: 20px; padding: 12px; background: rgba(220, 53, 69, 0.1); border-radius: 8px; font-size: 0.85rem; color: #b3b3b3;">
+                ⚠ M-Pesa API Issue: {{ mpesa_token_message }}<br>
+                Consumer Key: {{ mpesa_key_preview }}<br>
+                Consumer Secret: {{ mpesa_secret_preview }}
+            </div>
+        {% endif %}
 
 
 
         <a href="{% url 'products' %}" class="back-link">← Back to products</a>
     </div>
+
+    <script>
+        function validatePhone(phone) {
+            // Remove all non-digit characters
+            const cleaned = phone.replace(/\D/g, '');
+            
+            // Check if it matches Kenyan phone formats
+            if (cleaned.startsWith('254') && cleaned.length === 12) {
+                return true;
+            } else if (cleaned.startsWith('0') && cleaned.length === 10) {
+                return true;
+            } else if (cleaned.startsWith('7') && cleaned.length === 9) {
+                return true;
+            } else if (cleaned.startsWith('2547') && cleaned.length === 12) {
+                return true;
+            }
+            
+            return false;
+        }
+
+        function formatPhone(phone) {
+            // Remove all non-digit characters
+            let cleaned = phone.replace(/\D/g, '');
+            
+            // Format to 2547XXXXXXXX
+            if (cleaned.startsWith('0') && cleaned.length === 10) {
+                cleaned = '254' + cleaned.substring(1);
+            } else if (cleaned.startsWith('7') && cleaned.length === 9) {
+                cleaned = '254' + cleaned;
+            } else if (cleaned.startsWith('+254') && cleaned.length === 13) {
+                cleaned = cleaned.substring(1);
+            }
+            
+            return cleaned;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const phoneInput = document.getElementById('phone');
+            const submitButton = document.querySelector('.btn-pay');
+            
+            phoneInput.addEventListener('input', function() {
+                const phone = this.value;
+                const isValid = validatePhone(phone);
+                
+                if (phone && !isValid) {
+                    this.style.borderColor = '#dc3545';
+                    submitButton.style.opacity = '0.6';
+                    submitButton.style.cursor = 'not-allowed';
+                } else {
+                    this.style.borderColor = '';
+                    submitButton.style.opacity = '';
+                    submitButton.style.cursor = '';
+                }
+            });
+            
+            form.addEventListener('submit', function(e) {
+                const phone = phoneInput.value;
+                
+                if (!phone) {
+                    e.preventDefault();
+                    alert('Please enter a phone number');
+                    return;
+                }
+                
+                if (!validatePhone(phone)) {
+                    e.preventDefault();
+                    alert('Please enter a valid Kenyan phone number (e.g., 2547XXXXXXXX, 07XXXXXXXX, or 7XXXXXXXX)');
+                    return;
+                }
+                
+                // Format the phone number before submission
+                phoneInput.value = formatPhone(phone);
+            });
+        });
+    </script>
 </body>
 </html>

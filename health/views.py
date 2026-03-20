@@ -4,13 +4,15 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from datetime import date
 from .models import CalorieLog
-from .forms import CalorieForm
+from .forms import CalorieForm, CustomUserCreationForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse
 
 from .mpesa import mpesa_stk_push, mpesa_access_token_info, _discover_ngrok_callback_url
+from .food_dictionary import estimate_calories, categorize_food_enhanced, get_food_info
+from .calorie_database import get_calorie_info, search_calorie_foods
 
 def categorize_food(food_name):
     """Automatically categorize food based on name"""
@@ -87,9 +89,20 @@ def tracker_dashboard(request, update_id=None):
         form = CalorieForm(request.POST, instance=instance)
         if form.is_valid():
             new_log = form.save(commit=False)
-            # Auto-categorize if no category is selected
-            if not new_log.category or new_log.category == 'carbohydrates':
-                new_log.category = categorize_food(new_log.food_name)
+            # Auto-categorize and estimate calories using enhanced food dictionary
+            food_info = get_food_info(new_log.food_name)
+            if food_info:
+                new_log.category = food_info['category']
+                # Auto-fill calories if not provided or if zero
+                if not new_log.calories or new_log.calories == 0:
+                    new_log.calories = food_info['calories']
+            else:
+                # Fallback to enhanced categorization if not in database
+                new_log.category = categorize_food_enhanced(new_log.food_name)
+                # Auto-estimate calories if not provided or if zero
+                if not new_log.calories or new_log.calories == 0:
+                    new_log.calories = estimate_calories(new_log.food_name)
+            
             new_log.user = request.user 
             new_log.save()             
             return redirect('dashboard')
@@ -127,7 +140,7 @@ def delete_log(request, pk):
 
 def signup(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             # Auto-login the new user
@@ -136,7 +149,7 @@ def signup(request):
             messages.success(request, "Account created! Welcome to CalorieTracker.")
             return redirect('dashboard')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'health/signup.html', {'form': form})
 
 
@@ -197,6 +210,23 @@ def contact(request):
 def about(request):
     return render(request, 'health/about.html')
 
+def food_search_api(request):
+    """API endpoint for food search with autocomplete"""
+    query = request.GET.get('q', '').lower().strip()
+    search_type = request.GET.get('type', 'food')  # 'food' or 'calorie'
+    
+    if not query:
+        return JsonResponse({'foods': [], 'calories': []})
+    
+    if search_type == 'calorie':
+        # Search calorie database
+        calorie_results = search_calorie_foods(query)
+        return JsonResponse({'foods': [], 'calories': calorie_results})
+    else:
+        # Search calorie database for food suggestions and auto-fill
+        calorie_results = search_calorie_foods(query)
+        return JsonResponse({'foods': calorie_results, 'calories': []})
+
 
 import json
 from django.http import JsonResponse
@@ -211,6 +241,17 @@ def mpesa_checkout(request):
 
     # Ensure we always have a product and amount to avoid an empty checkout screen
     if not product or not amount:
+        messages.error(request, 'Missing product or amount information')
+        return redirect('products')
+
+    # Validate amount
+    try:
+        amount_int = int(amount)
+        if amount_int <= 0:
+            messages.error(request, 'Amount must be greater than 0')
+            return redirect('products')
+    except ValueError:
+        messages.error(request, 'Invalid amount format')
         return redirect('products')
 
     callback_url = getattr(settings, 'MPESA_CALLBACK_URL', '') or request.build_absolute_uri(reverse('mpesa_callback'))
@@ -240,18 +281,33 @@ def mpesa_checkout(request):
     }
 
     if request.method == 'POST':
+        phone = request.POST.get('phone', '').strip()
+        
+        # Additional client-side validation
+        if not phone:
+            context['success'] = False
+            context['message'] = 'Phone number is required'
+            return render(request, 'health/mpesa_checkout.html', context)
+
         result = mpesa_stk_push(
-            phone=context['phone'],
-            amount=amount,
+            phone=phone,
+            amount=amount_int,
             account_reference=product,
             transaction_desc=f"Purchase: {product}",
             callback_url=callback_url,
         )
+        
         context['success'] = result.get('success', False)
         context['message'] = result.get('message')
         context['raw'] = result.get('data')
         # show the actual URL used when we auto-discover ngrok or other overrides
         context['mpesa_callback_url'] = result.get('used_callback_url') or callback_url
+
+        # Add success message to Django messages framework
+        if result.get('success'):
+            messages.success(request, f'STK Push sent to {phone}. Please check your phone to complete the payment.')
+        else:
+            messages.error(request, f'Payment failed: {result.get("message")}')
 
     return render(request, 'health/mpesa_checkout.html', context)
 
@@ -294,6 +350,56 @@ def mpesa_callback(request):
         payload = json.loads(request.body)
     except json.JSONDecodeError:
         payload = request.body.decode(errors='ignore')
+
+    # Log the callback for debugging and reconciliation
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f'MPESA Callback received: {payload}')
+    
+    # Extract transaction details
+    result_code = None
+    result_desc = None
+    merchant_request_id = None
+    checkout_request_id = None
+    amount = None
+    mpesa_receipt = None
+    phone_number = None
+    
+    try:
+        # Parse the callback structure
+        if isinstance(payload, dict):
+            body = payload.get('Body', {})
+            stk_callback = body.get('stkCallback', {})
+            
+            result_code = stk_callback.get('ResultCode')
+            result_desc = stk_callback.get('ResultDesc')
+            merchant_request_id = stk_callback.get('MerchantRequestID')
+            checkout_request_id = stk_callback.get('CheckoutRequestID')
+            
+            # Extract callback metadata
+            callback_metadata = stk_callback.get('CallbackMetadata', {})
+            metadata_items = callback_metadata.get('Item', [])
+            
+            for item in metadata_items:
+                name = item.get('Name')
+                value = item.get('Value')
+                
+                if name == 'Amount':
+                    amount = value
+                elif name == 'MpesaReceiptNumber':
+                    mpesa_receipt = value
+                elif name == 'PhoneNumber':
+                    phone_number = value
+            
+            # Log successful transactions
+            if result_code == 0:
+                logger.info(f'Successful MPESA transaction: Receipt={mpesa_receipt}, Amount={amount}, Phone={phone_number}')
+                # TODO: Store transaction in database, update user's purchase status, send confirmation email, etc.
+            else:
+                logger.warning(f'Failed MPESA transaction: Code={result_code}, Desc={result_desc}, CheckoutID={checkout_request_id}')
+                
+    except Exception as e:
+        logger.error(f'Error parsing MPESA callback: {e}')
 
     # TODO: Persist callback payload to database/logs for reconciliation
     print('MPESA Callback payload:', payload)

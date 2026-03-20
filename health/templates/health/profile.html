@@ -347,11 +347,8 @@
     }
     
     function resetForm() {
-        // Reset form to original values
-        document.getElementById('email').value = '{{ user.email }}';
-        document.getElementById('firstName').value = '{{ user.first_name }}';
-        document.getElementById('lastName').value = '{{ user.last_name }}';
-        document.getElementById('bio').value = '';
+        // Navigate back to home page
+        window.location.href = '{% url "dashboard" %}';
     }
     
     // Add enter key support for form fields

@@ -55,19 +55,28 @@ def _sanitize_phone(phone: str) -> str:
     if not phone:
         raise ValueError('Phone number is required')
 
+    # Remove all non-digit characters
     cleaned = ''.join([c for c in phone if c.isdigit()])
 
-    # Support both 07XXXXXXXX and +2547XXXXXXXX formats
-    if cleaned.startswith('0') and len(cleaned) == 10:
+    # Handle different formats
+    if cleaned.startswith('2547') and len(cleaned) == 12:
+        # Already in correct format
+        return cleaned
+    elif cleaned.startswith('0') and len(cleaned) == 10:
+        # Kenyan format: 07XXXXXXXX -> 2547XXXXXXXX
         cleaned = '254' + cleaned[1:]
-    if cleaned.startswith('7') and len(cleaned) == 9:
+    elif cleaned.startswith('7') and len(cleaned) == 9:
+        # Short format: 7XXXXXXXX -> 2547XXXXXXXX
         cleaned = '254' + cleaned
+    elif cleaned.startswith('+') and cleaned.startswith('+2547') and len(cleaned) == 13:
+        # International format: +2547XXXXXXXX -> 2547XXXXXXXX
+        cleaned = cleaned[1:]
+    else:
+        raise ValueError('Invalid phone number format. Use: 2547XXXXXXXX, 07XXXXXXXX, or +2547XXXXXXXX')
 
-    if not cleaned.startswith('254'):
-        raise ValueError('Phone number must start with 254 and be 12 digits long (e.g. 2547XXXXXXXX)')
-
-    if len(cleaned) != 12:
-        raise ValueError('Phone number must be 12 digits long (e.g. 2547XXXXXXXX)')
+    # Validate final format
+    if len(cleaned) != 12 or not cleaned.startswith('2547'):
+        raise ValueError('Phone number must be 12 digits starting with 2547 (e.g. 254712345678)')
 
     return cleaned
 
@@ -110,7 +119,7 @@ def _fetch_access_token() -> dict:
             return data
     except urllib.error.HTTPError as exc:
         message = exc.read().decode(errors='ignore')
-        raise MpesaConfigError(f'Failed to get access token: {message}')
+        raise MpesaConfigError(f'Failed to get access token: HTTP {exc.code} - {message}')
 
 
 def _get_access_token() -> str:
@@ -128,7 +137,25 @@ def mpesa_access_token_info() -> dict:
             'expires_in': data.get('expires_in'),
         }
     except MpesaConfigError as exc:
-        return {'success': False, 'message': str(exc)}
+        error_msg = str(exc)
+        if 'Missing MPESA_CONSUMER_KEY' in error_msg:
+            return {
+                'success': False, 
+                'message': 'M-Pesa Consumer Key is missing. Please set MPESA_CONSUMER_KEY in your environment variables or settings.py'
+            }
+        elif 'Failed to get access token' in error_msg:
+            if '401' in error_msg or 'Unauthorized' in error_msg:
+                return {
+                    'success': False, 
+                    'message': 'Invalid M-Pesa credentials. Please check your Consumer Key and Secret from Safaricom Developer Portal'
+                }
+            else:
+                return {
+                    'success': False, 
+                    'message': f'M-Pesa API connection failed: {error_msg}'
+                }
+        else:
+            return {'success': False, 'message': str(exc)}
 
 
 def mpesa_stk_push(
@@ -173,17 +200,38 @@ def mpesa_stk_push(
             elif env == 'sandbox':
                 # For sandbox, allow localhost HTTP for testing
                 callback_url = 'http://127.0.0.1:8000/mpesa/callback/'
+            else:
+                # Production requires HTTPS callback
+                return {
+                    'success': False,
+                    'message': (
+                        'No callback URL configured for production. '
+                        'Set MPESA_CALLBACK_URL environment variable or run ngrok for HTTPS tunneling.'
+                    ),
+                }
 
     # Daraja requires callback URL to be HTTPS in production.
-    if env == 'production' and (not callback_url or not callback_url.startswith('https://')):
-        return {
-            'success': False,
-            'message': (
-                'Invalid CallBackURL. Daraja requires a public HTTPS callback URL in production. '
-                'Run ngrok and set MPESA_CALLBACK_URL to the HTTPS ngrok URL (e.g. https://xxxx.ngrok.io/mpesa/callback/).'
-            ),
-            'callback_url': callback_url,
-        }
+    if env == 'production':
+        if not callback_url.startswith('https://'):
+            return {
+                'success': False,
+                'message': (
+                    'Invalid CallBackURL. Daraja requires a public HTTPS callback URL in production. '
+                    'Run ngrok and set MPESA_CALLBACK_URL to the HTTPS ngrok URL (e.g. https://xxxx.ngrok.io/mpesa/callback/).'
+                ),
+                'callback_url': callback_url,
+            }
+        
+        # Additional validation for production callback
+        if 'localhost' in callback_url or '127.0.0.1' in callback_url:
+            return {
+                'success': False,
+                'message': (
+                    'Localhost callback URLs are not allowed in production. '
+                    'Use ngrok or a public HTTPS URL for the callback.'
+                ),
+                'callback_url': callback_url,
+            }
 
     used_callback_url = callback_url
 
@@ -232,18 +280,33 @@ def mpesa_stk_push(
             }
     except urllib.error.HTTPError as exc:
         try:
-            error_data = json.loads(exc.read().decode('utf-8'))
+            error_content = exc.read().decode('utf-8')
+            error_data = json.loads(error_content)
         except Exception:
-            error_data = {'error': exc.read().decode(errors='ignore')}
+            error_data = {'error': error_content}
+        
+        # Provide more user-friendly error messages
+        error_code = error_data.get('errorCode', '')
+        error_message = error_data.get('errorMessage', '')
+        
+        if error_code == '500.001.1001' or 'Wrong credentials' in error_message:
+            user_message = 'Invalid M-Pesa credentials. Please check your Consumer Key and Secret from Safaricom Developer Portal'
+        elif error_code == '400.002.02' or 'Invalid CallBackURL' in error_message:
+            user_message = 'Invalid callback URL. Please ensure your callback URL is reachable and properly configured'
+        elif error_code == '400.002.01' or 'Invalid Request' in error_message:
+            user_message = 'Invalid request format. Please check your input parameters'
+        else:
+            user_message = f'STK Push failed: {error_message} (Code: {error_code})'
+        
         return {
             'success': False,
-            'message': 'STK Push failed',
+            'message': user_message,
             'data': error_data,
             'used_callback_url': used_callback_url,
         }
     except Exception as exc:
         return {
             'success': False,
-            'message': str(exc),
+            'message': f'Network error: {str(exc)}. Please check your internet connection and try again.',
             'used_callback_url': used_callback_url,
         }

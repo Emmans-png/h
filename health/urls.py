@@ -17,6 +17,7 @@ urlpatterns = [
     path('mpesa/callback/', views.mpesa_callback, name='mpesa_callback'),
     path('contact/', views.contact, name='contact'),
     path('about/', views.about, name='about'),
+    path('api/food-search/', views.food_search_api, name='food_search_api'),
     path('stk-push/', views.initiate_stk_push, name='stk_push'),
 ]
 

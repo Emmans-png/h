@@ -1,4 +1,5 @@
 {% load static %}
+{% load custom_filters %}
 {% include 'health/navbar.html' %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
 <style>
@@ -444,6 +445,38 @@
     font-style: normal;
 }
 
+    /* Progress Bar Animations */
+    @keyframes progressPulse {
+        0% { box-shadow: 0 0 20px rgba(229, 9, 20, 0.5); }
+        50% { box-shadow: 0 0 30px rgba(229, 9, 20, 0.8); }
+        100% { box-shadow: 0 0 20px rgba(229, 9, 20, 0.5); }
+    }
+
+    .progress-bar-active {
+        animation: progressPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes slideInProgress {
+        from { 
+            opacity: 0; 
+            transform: translateY(20px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+
+    .progress-container {
+        animation: slideInProgress 0.6s ease-out;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.7; }
+        100% { opacity: 1; }
+    }
+
 </style>
 <!-- LEFT DRAWER: REVIEW & PRODUCTS -->
 <div id="reviewOverlay" class="drawer-overlay" onclick="closeReview()"></div>
@@ -463,7 +496,7 @@
 <div id="overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
 <div id="sideDrawer" class="side-drawer">
     <h2 style="color: #E50914; margin-bottom: 5px;">{% if editing %}Edit Log{% else %}New Meal{% endif %}</h2>
-    <p style="color: #666; font-size: 13px; margin-bottom: 20px;">Type food and quantity for auto-calories</p>
+    <p style="color: #666; font-size: 13px; margin-bottom: 20px;">🍽️ Type food name for smart suggestions | 📊 Type in calories for reference values</p>
     
     <form method="POST" id="calorieForm">
         {% csrf_token %}
@@ -594,6 +627,76 @@
                 </div>
             </div>
 
+            <!-- Daily Calorie Progress Bar -->
+            <div class="progress-container" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(229, 9, 20, 0.3); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="color: #E50914; margin: 0; font-size: 1.2rem;">Daily Calorie Progress</h3>
+                    <span id="progressPercentage" style="color: #fff; font-weight: bold; font-size: 1.1rem;">{% if total %}{{ total|default:0|mul:100|div:2000|floatformat:0 }}{% else %}0{% endif %}%</span>
+                </div>
+                
+                <!-- Progress Bar Container -->
+                <div style="background: #333; height: 30px; border-radius: 15px; overflow: hidden; position: relative; margin-bottom: 15px;">
+                    <!-- Progress Bar Fill -->
+                    <div id="progressBar" style="
+                        background: linear-gradient(90deg, #E50914 0%, #ff6b35 100%);
+                        height: 100%;
+                        width: {% if total %}{{ total|default:0|mul:100|div:2000 }}{% else %}0{% endif %}%;
+                        border-radius: 15px;
+                        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                        position: relative;
+                        box-shadow: 0 0 20px rgba(229, 9, 20, 0.5);
+                    ">
+                    </div>
+                </div>
+                
+                <!-- Progress Stats -->
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
+                    <div style="color: #b3b3b3;">
+                        <span style="color: #4CAF50;">✓</span> Consumed: <strong>{{ total|default:"0" }}</strong> kcal
+                    </div>
+                    <div style="color: #b3b3b3;">
+                        Remaining: <strong id="remainingCalories">{% if total %}{{ 2000|sub:total|default:2000 }}{% else %}2000{% endif %}</strong> kcal
+                    </div>
+                    <div style="color: #b3b3b3;">
+                        Goal: <strong>2000</strong> kcal
+                    </div>
+                </div>
+                
+                <!-- Progress Message -->
+                <div id="progressMessage" style="margin-top: 12px; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center;">
+                    {% if total %}
+                        {% if total >= 2000 %}
+                            <div style="background: rgba(255, 107, 53, 0.2); color: #FF6B35; border: 1px solid rgba(255, 107, 53, 0.3);">
+                                🎯 Daily goal reached! Great job today!
+                            </div>
+                        {% elif total >= 1600 %}
+                            <div style="background: rgba(229, 9, 20, 0.2); color: #E50914; border: 1px solid rgba(229, 9, 20, 0.3);">
+                                🔥 Almost there! {{ 2000|sub:total }} kcal to go!
+                            </div>
+                        {% elif total >= 1000 %}
+                            <div style="background: rgba(255, 193, 7, 0.2); color: #FFC107; border: 1px solid rgba(255, 193, 7, 0.3);">
+                                💪 Good progress! {{ 2000|sub:total }} kcal remaining.
+                            </div>
+                        {% else %}
+                            <div style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3);">
+                                🌱 Great start! {{ 2000|sub:total }} kcal to daily goal.
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Warning message for exceeding target -->
+                        {% if total > 2000 %}
+                        <div style="background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.3); margin-top: 8px; animation: pulse 2s infinite;">
+                            ⚠️ WARNING: You're {{ total|sub:2000 }} kcal over your daily target! You're losing track...
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3);">
+                            🌱 Ready to start! Log your first meal to begin tracking.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
             <div class="today-grid">
                 {% for log in logs %}
                 <div class="food-card">
@@ -713,33 +816,365 @@
 
     {% if editing %} window.onload = openDrawer; {% endif %}
 
-    // AUTO-CALORIE LOOKUP
+    // ENHANCED FOOD AND CALORIE AUTOCOMPLETE WITH AUTO-CATEGORY
     const foodInput = document.querySelector('input[name="food_name"]');
     const calInput = document.querySelector('input[name="calories"]');
+    const categorySelect = document.querySelector('select[name="category"]');
     const statusDiv = document.getElementById('api-status');
     let typingTimer;
+    let currentFoodSuggestions = [];
+    let currentCalorieSuggestions = [];
 
+    // Create autocomplete dropdown for food
+    const foodAutocompleteDropdown = document.createElement('div');
+    foodAutocompleteDropdown.id = 'food-autocomplete';
+    foodAutocompleteDropdown.style.cssText = `
+        position: absolute;
+        background: rgba(26, 26, 26, 0.95);
+        border: 1px solid #E50914;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        width: 100%;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        display: none;
+    `;
+    
+    // Create autocomplete dropdown for calories
+    const calAutocompleteDropdown = document.createElement('div');
+    calAutocompleteDropdown.id = 'calorie-autocomplete';
+    calAutocompleteDropdown.style.cssText = `
+        position: absolute;
+        background: rgba(26, 26, 26, 0.95);
+        border: 1px solid #E50914;
+        border-radius: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        width: 100%;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        display: none;
+    `;
+    
+    // Insert dropdowns after inputs
+    foodInput.parentNode.style.position = 'relative';
+    foodInput.parentNode.insertBefore(foodAutocompleteDropdown, foodInput.nextSibling);
+    
+    calInput.parentNode.style.position = 'relative';
+    calInput.parentNode.insertBefore(calAutocompleteDropdown, calInput.nextSibling);
+
+    // Food input event listener
     foodInput.addEventListener('input', () => {
         clearTimeout(typingTimer);
-        statusDiv.innerText = "Searching calories...";
-        typingTimer = setTimeout(() => {
-            const query = foodInput.value;
-            if (query.length > 2) {
-                fetch(`https://api.calorieninjas.com/v1/nutrition?query=${encodeURIComponent(query)}`, {
-                    headers: { 'X-Api-Key': 'qdMlWymr887Ln0Hi0CRJLTT51mJZCa3cXju0ozyQ' }
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.items && data.items.length > 0) {
-                        const totalCals = data.items.reduce((acc, item) => acc + item.calories, 0);
-                        calInput.value = Math.round(totalCals);
-                        statusDiv.innerText = "✓ Match found";
-                        statusDiv.style.color = "#4CAF50";
-                    } else { statusDiv.innerText = "No data found"; statusDiv.style.color = "#E50914"; }
-                }).catch(() => { statusDiv.innerText = "Search error"; });
-            }
-        }, 1000);
+        const query = foodInput.value.trim();
+        
+        if (query.length > 1) {
+            statusDiv.innerText = "Searching foods...";
+            typingTimer = setTimeout(() => {
+                searchFoods(query);
+            }, 300);
+        } else {
+            hideFoodAutocomplete();
+            statusDiv.innerText = "";
+        }
+        
+        // Auto-update category based on food name
+        updateCategoryBasedOnFood(query);
     });
+
+    // Calorie input event listener
+    calInput.addEventListener('input', () => {
+        clearTimeout(typingTimer);
+        const query = calInput.value.trim();
+        
+        if (query.length > 0) {
+            statusDiv.innerText = "Searching calorie info...";
+            typingTimer = setTimeout(() => {
+                searchCalories(query);
+            }, 300);
+        } else {
+            hideCalorieAutocomplete();
+        }
+    });
+
+    function searchFoods(query) {
+        fetch(`/api/food-search/?q=${encodeURIComponent(query)}&type=food`)
+            .then(res => res.json())
+            .then(data => {
+                currentFoodSuggestions = data.foods || [];
+                displayFoodAutocomplete(currentFoodSuggestions);
+                
+                if (currentFoodSuggestions.length > 0) {
+                    statusDiv.innerText = `✓ Found ${currentFoodSuggestions.length} food(s)`;
+                    statusDiv.style.color = "#4CAF50";
+                    
+                    // Auto-select first match if exact match - automatically fills calories
+                    const exactMatch = currentFoodSuggestions.find(food => 
+                        food.name.toLowerCase() === query.toLowerCase()
+                    );
+                    if (exactMatch) {
+                        selectFood(exactMatch);
+                    }
+                    
+                    // Also auto-fill calories if there's only one result
+                    if (currentFoodSuggestions.length === 1 && !exactMatch) {
+                        selectFood(currentFoodSuggestions[0]);
+                    }
+                } else {
+                    statusDiv.innerText = "No foods found";
+                    statusDiv.style.color = "#E50914";
+                    hideFoodAutocomplete();
+                }
+            })
+            .catch(() => {
+                statusDiv.innerText = "Search error";
+                statusDiv.style.color = "#E50914";
+                hideFoodAutocomplete();
+            });
+    }
+
+    function searchCalories(query) {
+        fetch(`/api/food-search/?q=${encodeURIComponent(query)}&type=calorie`)
+            .then(res => res.json())
+            .then(data => {
+                currentCalorieSuggestions = data.calories || [];
+                displayCalorieAutocomplete(currentCalorieSuggestions);
+                
+                if (currentCalorieSuggestions.length > 0) {
+                    statusDiv.innerText = `✓ Found ${currentCalorieSuggestions.length} calorie reference(s)`;
+                    statusDiv.style.color = "#4CAF50";
+                } else {
+                    statusDiv.innerText = "No calorie data found";
+                    statusDiv.style.color = "#E50914";
+                    hideCalorieAutocomplete();
+                }
+            })
+            .catch(() => {
+                statusDiv.innerText = "Search error";
+                statusDiv.style.color = "#E50914";
+                hideCalorieAutocomplete();
+            });
+    }
+
+    function updateCategoryBasedOnFood(foodName) {
+        if (!foodName || foodName.length < 2) return;
+        
+        const foodNameLower = foodName.toLowerCase();
+        let category = 'carbohydrates'; // default
+        
+        // Proteins - expanded keywords
+        const proteinKeywords = [
+            'beef', 'lobster', 'fish', 'eggs', 'chicken', 'turkey', 'pork', 'lamb', 'meat', 
+            'salmon', 'tuna', 'shrimp', 'bacon', 'sausage', 'steak', 'rib', 'chop', 'wing',
+            'drumstick', 'thigh', 'breast', 'loin', 'ground', 'jerky', 'roast', 'cutlet',
+            'fillet', 'cod', 'haddock', 'halibut', 'mackerel', 'sardines', 'anchovies',
+            'trout', 'tilapia', 'bass', 'snapper', 'grouper', 'swordfish', 'crab', 'clams',
+            'mussels', 'oysters', 'scallops', 'squid', 'octopus', 'calamari', 'duck', 'goose',
+            'quail', 'pheasant', 'rabbit', 'venison', 'bison', 'veal', 'prosciutto', 'salami',
+            'pepperoni', 'pancetta', 'guanciale', 'bratwurst', 'kielbasa', 'chorizo', 'tofu',
+            'tempeh', 'seitan', 'edamame', 'beans', 'lentils', 'chickpeas', 'hummus', 'peanuts',
+            'almonds', 'walnuts', 'cashews', 'pecans', 'hazelnuts', 'pistachios', 'macadamia'
+        ];
+        
+        // Vitamins (fruits and vegetables) - expanded keywords
+        const vitaminKeywords = [
+            'apple', 'banana', 'orange', 'grape', 'berry', 'strawberry', 'blueberry', 'raspberry',
+            'blackberry', 'cranberry', 'cherry', 'peach', 'plum', 'pear', 'kiwi', 'mango', 'pineapple',
+            'papaya', 'guava', 'passion fruit', 'pomegranate', 'fig', 'date', 'coconut', 'avocado',
+            'watermelon', 'cantaloupe', 'honeydew', 'lemon', 'lime', 'grapefruit', 'tangerine',
+            'clementine', 'mandarin', 'apricot', 'nectarine', 'lychee', 'dragon fruit', 'star fruit',
+            'vegetable', 'salad', 'carrot', 'broccoli', 'spinach', 'tomato', 'onion', 'garlic',
+            'pepper', 'cucumber', 'lettuce', 'cabbage', 'cauliflower', 'brussels sprouts', 'kale',
+            'collard greens', 'arugula', 'watercress', 'asparagus', 'green beans', 'peas', 'corn',
+            'potato', 'sweet potato', 'yam', 'squash', 'pumpkin', 'zucchini', 'eggplant', 'mushroom',
+            'radish', 'beet', 'turnip', 'parsnip', 'celery', 'fennel', 'artichoke', 'okra', 'bamboo'
+        ];
+        
+        // Check for proteins
+        if (proteinKeywords.some(keyword => foodNameLower.includes(keyword))) {
+            category = 'proteins';
+        }
+        // Check for vitamins (fruits and vegetables)
+        else if (vitaminKeywords.some(keyword => foodNameLower.includes(keyword))) {
+            category = 'vitamins';
+        }
+        
+        // Update category dropdown
+        if (categorySelect) {
+            for (let option of categorySelect.options) {
+                if (option.value === category) {
+                    categorySelect.value = category;
+                    break;
+                }
+            }
+        }
+    }
+
+    function displayFoodAutocomplete(foods) {
+        if (foods.length === 0) {
+            hideFoodAutocomplete();
+            return;
+        }
+
+        const html = foods.map((food, index) => `
+            <div class="food-suggestion" data-index="${index}" style="
+                padding: 12px 15px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                transition: background 0.2s;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            " onmouseover="this.style.background='rgba(229, 9, 20, 0.2)'" 
+               onmouseout="this.style.background='transparent'">
+                <div>
+                    <div style="color: white; font-weight: 500; margin-bottom: 2px;">${food.name}</div>
+                    <div style="color: #b3b3b3; font-size: 11px;">${food.category}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: #ffd93d; font-weight: 600;">${food.calories} cal</div>
+                    <div style="color: #666; font-size: 10px;">per ${food.unit}</div>
+                </div>
+            </div>
+        `).join('');
+
+        foodAutocompleteDropdown.innerHTML = html;
+        foodAutocompleteDropdown.style.display = 'block';
+
+        // Add click handlers
+        foodAutocompleteDropdown.querySelectorAll('.food-suggestion').forEach(suggestion => {
+            suggestion.addEventListener('click', () => {
+                const index = parseInt(suggestion.dataset.index);
+                selectFood(foods[index]);
+            });
+        });
+    }
+
+    function displayCalorieAutocomplete(calories) {
+        if (calories.length === 0) {
+            hideCalorieAutocomplete();
+            return;
+        }
+
+        const html = calories.map((item, index) => `
+            <div class="calorie-suggestion" data-index="${index}" style="
+                padding: 12px 15px;
+                cursor: pointer;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                transition: background 0.2s;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            " onmouseover="this.style.background='rgba(229, 9, 20, 0.2)'" 
+               onmouseout="this.style.background='transparent'">
+                <div>
+                    <div style="color: white; font-weight: 500; margin-bottom: 2px;">${item.name}</div>
+                    <div style="color: #b3b3b3; font-size: 11px;">Reference value</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: #ffd93d; font-weight: 600;">${item.calories} cal</div>
+                    <div style="color: #666; font-size: 10px;">per ${item.unit}</div>
+                </div>
+            </div>
+        `).join('');
+
+        calAutocompleteDropdown.innerHTML = html;
+        calAutocompleteDropdown.style.display = 'block';
+
+        // Add click handlers
+        calAutocompleteDropdown.querySelectorAll('.calorie-suggestion').forEach(suggestion => {
+            suggestion.addEventListener('click', () => {
+                const index = parseInt(suggestion.dataset.index);
+                selectCalorie(calories[index]);
+            });
+        });
+    }
+
+    function selectFood(food) {
+        foodInput.value = food.name;
+        calInput.value = food.calories;
+        
+        // Set category dropdown
+        updateCategoryBasedOnFood(food.name);
+        
+        statusDiv.innerText = `✓ Selected: ${food.name} (${food.calories} cal/${food.unit})`;
+        statusDiv.style.color = "#4CAF50";
+        hideFoodAutocomplete();
+        hideCalorieAutocomplete();
+        
+        // Move focus to calories
+        calInput.focus();
+    }
+
+    function selectCalorie(calorieItem) {
+        calInput.value = calorieItem.calories;
+        statusDiv.innerText = `✓ Applied: ${calorieItem.calories} cal per ${calorieItem.unit}`;
+        statusDiv.style.color = "#4CAF50";
+        hideCalorieAutocomplete();
+        
+        // Move focus to submit button
+        document.querySelector('button[type="submit"]').focus();
+    }
+
+    function hideFoodAutocomplete() {
+        foodAutocompleteDropdown.style.display = 'none';
+    }
+
+    function hideCalorieAutocomplete() {
+        calAutocompleteDropdown.style.display = 'none';
+    }
+
+    // Hide autocomplete when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!foodInput.contains(e.target) && !foodAutocompleteDropdown.contains(e.target)) {
+            hideFoodAutocomplete();
+        }
+        if (!calInput.contains(e.target) && !calAutocompleteDropdown.contains(e.target)) {
+            hideCalorieAutocomplete();
+        }
+    });
+
+    // Keyboard navigation
+    foodInput.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' && currentFoodSuggestions.length > 0) {
+            e.preventDefault();
+            const firstSuggestion = foodAutocompleteDropdown.querySelector('.food-suggestion');
+            if (firstSuggestion) {
+                firstSuggestion.style.background = 'rgba(229, 9, 20, 0.3)';
+            }
+        } else if (e.key === 'Escape') {
+            hideFoodAutocomplete();
+        }
+    });
+
+    calInput.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' && currentCalorieSuggestions.length > 0) {
+            e.preventDefault();
+            const firstSuggestion = calAutocompleteDropdown.querySelector('.calorie-suggestion');
+            if (firstSuggestion) {
+                firstSuggestion.style.background = 'rgba(229, 9, 20, 0.3)';
+            }
+        } else if (e.key === 'Escape') {
+            hideCalorieAutocomplete();
+        }
+    });
+
+    // Add CSS for autocomplete
+    const style = document.createElement('style');
+    style.textContent = `
+        #food-autocomplete::-webkit-scrollbar, #calorie-autocomplete::-webkit-scrollbar {
+            width: 6px;
+        }
+        #food-autocomplete::-webkit-scrollbar-track, #calorie-autocomplete::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+        #food-autocomplete::-webkit-scrollbar-thumb, #calorie-autocomplete::-webkit-scrollbar-thumb {
+            background: #E50914;
+            border-radius: 3px;
+        }
+    `;
+    document.head.appendChild(style);
 
     // CHART LOGIC: DAILY TOTALS
     if (typeof Chart !== 'undefined') {
@@ -871,4 +1306,105 @@
             }
         });
     }
+
+    // PROGRESS BAR UPDATE FUNCTION
+    function updateProgressBar(newTotal) {
+        const progressBar = document.getElementById('progressBar');
+        const progressPercentage = document.getElementById('progressPercentage');
+        const remainingCalories = document.getElementById('remainingCalories');
+        const progressMessage = document.getElementById('progressMessage');
+        
+        const dailyGoal = 2000;
+        const percentage = Math.min((newTotal / dailyGoal) * 100, 100);
+        const remaining = Math.max(dailyGoal - newTotal, 0);
+        
+        // Update progress bar width
+        progressBar.style.width = percentage + '%';
+        
+        // Update percentage display
+        progressPercentage.textContent = Math.round(percentage) + '%';
+        remainingCalories.textContent = remaining;
+        
+        // Update progress message
+        let messageHtml = '';
+        if (newTotal >= dailyGoal) {
+            messageHtml = `
+                <div style="background: rgba(255, 107, 53, 0.2); color: #FF6B35; border: 1px solid rgba(255, 107, 53, 0.3);">
+                    🎯 Daily goal reached! Great job today!
+                </div>
+            `;
+            
+            // Add warning if exceeding target
+            if (newTotal > dailyGoal) {
+                messageHtml += `
+                    <div style="background: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid rgba(220, 53, 69, 0.3); margin-top: 8px; animation: pulse 2s infinite;">
+                        ⚠️ WARNING: You're ${newTotal - dailyGoal} kcal over your daily target! You're losing track...
+                    </div>
+                `;
+            }
+        } else if (newTotal >= 1600) {
+            messageHtml = `
+                <div style="background: rgba(229, 9, 20, 0.2); color: #E50914; border: 1px solid rgba(229, 9, 20, 0.3);">
+                    🔥 Almost there! ${remaining} kcal to go!
+                </div>
+            `;
+        } else if (newTotal >= 1000) {
+            messageHtml = `
+                <div style="background: rgba(255, 193, 7, 0.2); color: #FFC107; border: 1px solid rgba(255, 193, 7, 0.3);">
+                    💪 Good progress! ${remaining} kcal remaining.
+                </div>
+            `;
+        } else if (newTotal > 0) {
+            messageHtml = `
+                <div style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3);">
+                    🌱 Great start! ${remaining} kcal to daily goal.
+                </div>
+            `;
+        } else {
+            messageHtml = `
+                <div style="background: rgba(76, 175, 80, 0.2); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3);">
+                    🌱 Ready to start! Log your first meal to begin tracking.
+                </div>
+            `;
+        }
+        
+        progressMessage.innerHTML = messageHtml;
+        
+        // Add animation effect
+        progressBar.style.transition = 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        // Update total calories display in header
+        const totalDisplay = document.querySelector('p[style*="color: #E50914; font-weight: bold"]');
+        if (totalDisplay) {
+            totalDisplay.textContent = `Total: ${newTotal} kcal`;
+        }
+    }
+
+    // Override form submission to update progress bar
+    const calorieForm = document.getElementById('calorieForm');
+    if (calorieForm) {
+        calorieForm.addEventListener('submit', function(e) {
+            // Get current calories from form
+            const caloriesInput = document.querySelector('input[name="calories"]');
+            const newCalories = parseInt(caloriesInput.value) || 0;
+            
+            // Get current total from page
+            const currentTotalText = document.querySelector('p[style*="color: #E50914; font-weight: bold"]').textContent;
+            const currentTotal = parseInt(currentTotalText.split(': ')[1].replace(' kcal', '').trim()) || 0;
+            
+            // Calculate new total
+            const newTotal = currentTotal + newCalories;
+            
+            // Update progress bar after a short delay (to allow form submission)
+            setTimeout(() => {
+                updateProgressBar(newTotal);
+            }, 500);
+        });
+    }
+
+    // Initialize progress bar on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentTotal = {{ total|default:0 }};
+        updateProgressBar(currentTotal);
+    });
 </script>

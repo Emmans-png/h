@@ -6,3 +6,27 @@ register = template.Library()
 def lookup(dictionary, key):
     """Lookup a value in a dictionary by key"""
     return dictionary.get(key, [])
+
+@register.filter
+def mul(value, arg):
+    """Multiply value by arg"""
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0
+
+@register.filter
+def div(value, arg):
+    """Divide value by arg"""
+    try:
+        return float(value) / float(arg)
+    except (ValueError, TypeError, ZeroDivisionError):
+        return 0
+
+@register.filter
+def sub(value, arg):
+    """Subtract arg from value"""
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return 0
