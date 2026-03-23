@@ -149,6 +149,103 @@
         color: white;
     }
     
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(220, 53, 69, 0.4);
+    }
+    
+    .btn-back:hover {
+        background: #E50914;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(229, 9, 20, 0.4);
+    }
+    
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.8);
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .modal-content {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        margin: 10% auto;
+        padding: 0;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        animation: slideIn 0.3s ease;
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 12px 12px 0 0;
+        text-align: center;
+    }
+    
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    
+    .modal-body {
+        padding: 30px;
+        color: white;
+    }
+    
+    .modal-footer {
+        padding: 20px 30px;
+        text-align: center;
+        border-top: 1px solid #333;
+    }
+    
+    .modal-footer button {
+        margin: 0 10px;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideIn {
+        from { transform: translateY(-50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -222,6 +319,28 @@
 </style>
 
 <div class="container">
+    <!-- Back to Dashboard Button -->
+    <div style="margin-bottom: 30px;">
+        <a href="{% url 'dashboard' %}" class="btn-back" style="
+            display: inline-flex;
+            align-items: center;
+            background: transparent;
+            color: #E50914;
+            border: 2px solid #E50914;
+            padding: 12px 25px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            font-size: 14px;
+        ">
+            ← Back to Dashboard
+        </a>
+    </div>
+    
     <!-- Profile Header -->
     <div class="profile-header">
         <div class="profile-avatar">{{ user.username|first|upper }}</div>
@@ -299,6 +418,17 @@
                 <span class="info-value">🔥 {{ streak|default:"0" }} days</span>
             </div>
             
+            <!-- Delete Account Section -->
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #333;">
+                <h2 style="color: #dc3545; margin-bottom: 15px;">⚠️ Account Deletion</h2>
+                <p style="color: #b3b3b3; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">
+                    Once you delete your account, there is no going back. Please be certain.
+                </p>
+                <button class="btn-danger" onclick="showDeleteConfirmation()">
+                    🗑️ Delete My Account
+                </button>
+            </div>
+            
             <h2 style="margin-top: 40px;">📈 Your Stats</h2>
             <div class="stats-grid">
                 <div class="stat-card">
@@ -325,7 +455,95 @@
     </div>
 </div>
 
+<!-- Delete Account Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>⚠️ Delete Account Confirmation</h2>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="font-size: 3rem; color: #dc3545; margin-bottom: 15px;">🗑️</div>
+                <h3 style="color: #dc3545; margin-bottom: 15px;">This action cannot be undone!</h3>
+            </div>
+            
+            <p style="color: #e0e0e0; margin-bottom: 20px; line-height: 1.6;">
+                Deleting your account will permanently remove:
+            </p>
+            
+            <ul style="color: #b3b3b3; margin: 20px 0; padding-left: 20px; line-height: 1.6;">
+                <li>All your calorie logs and meal history</li>
+                <li>Your weight tracking data and progress</li>
+                <li>Your profile information and BMR settings</li>
+                <li>Your account and all associated data</li>
+            </ul>
+            
+            <p style="color: #ff6b6b; font-weight: bold; margin-bottom: 25px;">
+                This action is irreversible and cannot be recovered.
+            </p>
+            
+            <div style="background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <p style="color: #dc3545; font-weight: bold; margin-bottom: 10px;">To confirm deletion, type:</p>
+                <code style="background: #000; color: #ff6b6b; padding: 5px 10px; border-radius: 4px; font-size: 14px;">delete my account</code>
+            </div>
+            
+            <form method="POST" action="{% url 'delete_account' %}" id="deleteForm">
+                {% csrf_token %}
+                <input type="text" 
+                       name="confirmation" 
+                       placeholder="Type 'delete my account' to confirm" 
+                       style="width: 100%; 
+                              padding: 15px; 
+                              background: #222; 
+                              border: 1px solid #444; 
+                              color: white; 
+                              border-radius: 6px; 
+                              font-size: 14px;
+                              margin-bottom: 10px;
+                              text-align: center;">
+                <small style="color: #666; font-size: 12px;">Case-sensitive - type exactly as shown above</small>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <button type="submit" form="deleteForm" class="btn-danger">Delete Account</button>
+        </div>
+    </div>
+</div>
+
 <script>
+    function showDeleteConfirmation() {
+        document.getElementById('deleteModal').style.display = 'block';
+    }
+    
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+        // Clear the confirmation input
+        document.querySelector('input[name="confirmation"]').value = '';
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('deleteModal');
+        if (event.target == modal) {
+            closeDeleteModal();
+        }
+    }
+    
+    // Add real-time validation for the confirmation input
+    document.querySelector('input[name="confirmation"]').addEventListener('input', function(e) {
+        const value = e.target.value.toLowerCase();
+        const submitBtn = document.querySelector('button[type="submit"]');
+        
+        if (value === 'delete my account') {
+            submitBtn.style.background = '#dc3545';
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.style.background = '#666';
+            submitBtn.disabled = true;
+        }
+    });
+    
     function updateProfile() {
         const form = document.getElementById('profileForm');
         const successMsg = document.getElementById('successMessage');

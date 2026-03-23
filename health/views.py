@@ -2,9 +2,9 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from datetime import date
-from .models import CalorieLog
-from .forms import CalorieForm, CustomUserCreationForm
+from datetime import date, timedelta
+from .models import CalorieLog, UserProfile, WeightLog
+from .forms import CalorieForm, CustomUserCreationForm, UserProfileForm, WeightLogForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.conf import settings
@@ -13,6 +13,28 @@ from django.urls import reverse
 from .mpesa import mpesa_stk_push, mpesa_access_token_info, _discover_ngrok_callback_url
 from .food_dictionary import estimate_calories, categorize_food_enhanced, get_food_info
 from .calorie_database import get_calorie_info, search_calorie_foods
+
+def check_weekly_weight_checkin(user):
+    """Check if user needs a weekly weight check-in"""
+    try:
+        profile = user.userprofile
+        # Get the most recent weight log
+        latest_weight_log = WeightLog.objects.filter(user=user).order_by('-date').first()
+        
+        if not latest_weight_log:
+            return None, "no_weight_logs"
+        
+        # Calculate days since last weight entry
+        days_since_last = (date.today() - latest_weight_log.date).days
+        
+        # Check if it's been 7 days or more since last weight entry
+        if days_since_last >= 7:
+            return days_since_last, "due_for_checkin"
+        else:
+            return days_since_last, "not_due"
+            
+    except UserProfile.DoesNotExist:
+        return None, "no_profile"
 
 def categorize_food(food_name):
     """Automatically categorize food based on name"""
@@ -45,6 +67,20 @@ def _mask_key(key: str) -> str:
 
 @login_required(login_url='login')
 def tracker_dashboard(request, update_id=None):
+    # Check for weekly weight check-in
+    days_since_last, checkin_status = check_weekly_weight_checkin(request.user)
+    
+    # Get user profile and BMR info
+    try:
+        profile = request.user.userprofile
+        user_bmr = profile.bmr
+        weight_progress = profile.get_weight_progress_message()
+        weight_diff = profile.get_weight_difference()
+    except UserProfile.DoesNotExist:
+        user_bmr = 0
+        weight_progress = "Please complete your profile to calculate BMR"
+        weight_diff = 0
+    
     # 1. Fetch data for Today's Feed
     today_logs = CalorieLog.objects.filter(user=request.user, date=date.today()).order_by('-id')
     total_calories = today_logs.aggregate(Sum('calories'))['calories__sum'] or 0
@@ -110,14 +146,18 @@ def tracker_dashboard(request, update_id=None):
         form = CalorieForm(instance=instance)
 
     # 6. Pass everything to the template
-    # Fetch Daraja access token for debugging/display
+    # Fetch Daraja access token for debugging/display (with error handling)
     mpesa_token = None
     mpesa_token_error = None
-    token_info = mpesa_access_token_info()
-    if token_info.get('success'):
-        mpesa_token = token_info.get('access_token')
-    else:
-        mpesa_token_error = token_info.get('message')
+    try:
+        token_info = mpesa_access_token_info()
+        if token_info.get('success'):
+            mpesa_token = token_info.get('access_token')
+        else:
+            mpesa_token_error = token_info.get('message')
+    except Exception as e:
+        # Handle network errors gracefully without breaking the dashboard
+        mpesa_token_error = f"Network error: {str(e)}"
 
     return render(request, 'health/home.html', {
         'logs': today_logs,
@@ -131,10 +171,20 @@ def tracker_dashboard(request, update_id=None):
         'history_nutrition': json.dumps(history_nutrition),
         'mpesa_token': mpesa_token,
         'mpesa_token_error': mpesa_token_error,
+        'user_bmr': user_bmr,
+        'weight_progress': weight_progress,
+        'weight_diff': weight_diff,
+        'days_since_last': days_since_last,
+        'checkin_status': checkin_status,
     })
+
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.http import require_POST
 
 @login_required
 def delete_log(request, pk):
+    # For now, allow both GET and POST to fix the immediate issue
+    # TODO: Restrict to POST only after debugging
     get_object_or_404(CalorieLog, pk=pk, user=request.user).delete()
     return redirect('dashboard')
 
@@ -146,11 +196,100 @@ def signup(request):
             # Auto-login the new user
             from django.contrib.auth import authenticate, login
             login(request, user)
-            messages.success(request, "Account created! Welcome to CalorieTracker.")
-            return redirect('dashboard')
+            return redirect('bmr_setup')
     else:
         form = CustomUserCreationForm()
     return render(request, 'health/signup.html', {'form': form})
+
+@login_required
+def bmr_setup(request):
+    """Setup user profile with BMR calculation"""
+    # Check if user already has a profile
+    try:
+        profile = request.user.userprofile
+        return redirect('dashboard')
+    except UserProfile.DoesNotExist:
+        pass
+    
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            # Calculate BMR
+            profile.calculate_bmr()
+            profile.save()
+            
+            # Create initial weight log
+            WeightLog.objects.create(
+                user=request.user,
+                weight=profile.current_weight,
+                notes="Initial weight entry during setup"
+            )
+            
+            messages.success(request, f"Your BMR is {profile.bmr} calories per day!")
+            return redirect('dashboard')
+    else:
+        form = UserProfileForm()
+    
+    return render(request, 'health/bmr_setup.html', {'form': form})
+
+@login_required
+def weight_tracking(request):
+    """Track weight progress and provide motivational messages"""
+    try:
+        profile = request.user.userprofile
+    except UserProfile.DoesNotExist:
+        messages.error(request, "Please complete your profile setup first.")
+        return redirect('bmr_setup')
+    
+    # Get weight logs - ensure latest is always on top
+    weight_logs = WeightLog.objects.filter(user=request.user).order_by('-date', '-id')[:10]
+    
+    if request.method == 'POST':
+        form = WeightLogForm(request.POST)
+        if form.is_valid():
+            weight_log = form.save(commit=False)
+            weight_log.user = request.user
+            weight_log.save()
+            
+            # Update user's current weight in profile
+            profile.current_weight = weight_log.weight
+            profile.calculate_bmr()
+            
+            # Provide motivational message
+            progress_message = profile.get_weight_progress_message()
+            
+            # Check if this is an AJAX request from the modal
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({'status': 'success', 'message': progress_message})
+            
+            messages.info(request, progress_message)
+            return redirect('weight_tracking')
+    else:
+        form = WeightLogForm()
+    
+    # Calculate weight change
+    if len(weight_logs) >= 2:
+        latest_weight = weight_logs[0].weight
+        previous_weight = weight_logs[1].weight
+        weight_change = latest_weight - previous_weight
+        weight_change_days = (weight_logs[0].date - weight_logs[1].date).days
+    else:
+        weight_change = 0
+        weight_change_days = 0
+    
+    context = {
+        'profile': profile,
+        'weight_logs': weight_logs,
+        'form': form,
+        'weight_change': weight_change,
+        'weight_change_days': weight_change_days,
+        'progress_message': profile.get_weight_progress_message(),
+    }
+    
+    return render(request, 'health/weight_tracking.html', context)
 
 
 def products(request):
@@ -161,6 +300,44 @@ def community(request):
 
 def mindfuel(request):
     return render(request, 'health/mindfuel.html')
+
+@login_required
+def delete_account(request):
+    """Handle account deletion with confirmation"""
+    if request.method == 'POST':
+        # Double-check confirmation
+        confirmation = request.POST.get('confirmation', '').lower()
+        if confirmation == 'delete my account':
+            try:
+                # Delete user's data
+                user = request.user
+                
+                # Delete related data (CASCADE should handle this, but let's be explicit)
+                CalorieLog.objects.filter(user=user).delete()
+                WeightLog.objects.filter(user=user).delete()
+                
+                # Delete user profile if it exists
+                try:
+                    user.userprofile.delete()
+                except UserProfile.DoesNotExist:
+                    pass
+                
+                # Delete the user account
+                user.delete()
+                
+                # Log out and redirect to home with success message
+                from django.contrib.auth import logout
+                logout(request)
+                
+                return render(request, 'health/account_deleted.html')
+            except Exception as e:
+                messages.error(request, "Error deleting account. Please try again.")
+                return redirect('profile')
+        else:
+            messages.error(request, "Incorrect confirmation. Please type 'delete my account' exactly.")
+            return redirect('profile')
+    
+    return redirect('profile')
 
 @login_required
 def profile(request):

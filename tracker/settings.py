@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-qfxo8ykl*+(7mlt-fzko(pw2uffaw7wmm*gm%ede_+kfb-3m#$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
 
 # Application definition
@@ -130,17 +130,8 @@ LOGOUT_REDIRECT_URL = 'login'
 # For testing, register an app and get Consumer Key/Secret
 # Sandbox ShortCode & PassKey are provided by Safaricom
 MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')  # sandbox or production
-MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', 'FZHQQR3ZBvBqGJj5W0j2xP1GkM8sX7h4')  # Valid sandbox key
-MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'gP4kL9mN2oQ6sR8tY1uI3wV5bX7zA9cD')  # Valid sandbox secret
-MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '174379')  # Sandbox test shortcode
-MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd1a503b00')  # Sandbox test passkey
-MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', 'http://127.0.0.1:8000/mpesa/callback/')  # Local testing URL
-# NOTE: Get your credentials from https://developer.safaricom.co.ke/
-# For testing, register an app and get Consumer Key/Secret
-# Sandbox ShortCode & PassKey are provided by Safaricom
-MPESA_ENVIRONMENT = os.environ.get('MPESA_ENVIRONMENT', 'sandbox')  # sandbox or production
-MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', 'FZHQQR3ZBvBqGJj5W0j2xP1GkM8sX7h4')  # Valid sandbox key
-MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'gP4kL9mN2oQ6sR8tY1uI3wV5bX7zA9cD')  # Valid sandbox secret
+MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY', 'eP2KEi7yRBKaxOxWV22qgBhdwqGYraGiQOql7eBsfTKx4aYe')  # Updated consumer key
+MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET', 'upqCKYSRszK2Asc6Nawrez9LXA2aasGOwxrHBRQkbbkmW5HWM4xVDEx5cwYXFAxb')  # Updated consumer secret
 MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE', '174379')  # Sandbox test shortcode
 MPESA_PASSKEY = os.environ.get('MPESA_PASSKEY', 'bfb279f9aa9bdbcf158e97dd1a503b00')  # Sandbox test passkey
 MPESA_CALLBACK_URL = os.environ.get('MPESA_CALLBACK_URL', 'http://127.0.0.1:8000/mpesa/callback/')  # Local testing URL

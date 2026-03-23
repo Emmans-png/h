@@ -1,0 +1,252 @@
+{% load static %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body{
+        background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+        padding: 20px 0;
+    }
+    
+    .bmr-container {
+        background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(45, 45, 45, 0.95) 100%);
+        border-radius: 20px;
+        padding: 50px 40px;
+        width: 550px;
+        max-width: 95vw;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(229, 9, 20, 0.3);
+        border: 1px solid rgba(229, 9, 20, 0.2);
+        backdrop-filter: blur(10px);
+        animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .brand-header {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+    
+    .brand-header h1 {
+        color: #e50914;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .brand-header p {
+        color: #b3b3b3;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+    
+    .form-group {
+        margin-bottom: 25px;
+    }
+    
+    .form-group label {
+        display: block;
+        color: #ffffff;
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+    
+    .form-group .form-control {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid rgba(229, 9, 20, 0.3);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-group .form-control:focus {
+        outline: none;
+        border-color: #e50914;
+        background: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 0 3px rgba(229, 9, 20, 0.2);
+    }
+    
+    .form-group .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Dark theme styling for select dropdowns */
+    .form-group select.form-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e50914' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 20px;
+        padding-right: 40px;
+    }
+    
+    .form-group select.form-control option {
+        background: #222;
+        color: white;
+        padding: 10px;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .submit-btn {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #e50914 0%, #b8070f 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 30px;
+    }
+    
+    .submit-btn:hover {
+        background: linear-gradient(135deg, #b8070f 0%, #e50914 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(229, 9, 20, 0.3);
+    }
+    
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+    
+    .error-list {
+        background: rgba(229, 9, 20, 0.1);
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .error-list li {
+        color: #ff6b6b;
+        margin-bottom: 5px;
+        list-style: none;
+    }
+    
+    .info-box {
+        background: rgba(52, 152, 219, 0.1);
+        border: 1px solid rgba(52, 152, 219, 0.3);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 25px;
+    }
+    
+    .info-box p {
+        color: #87ceeb;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    @media (max-width: 600px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .bmr-container {
+            padding: 30px 25px;
+        }
+        
+        .brand-header h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+
+<div class="bmr-container">
+    <div class="brand-header">
+        <h1>Welcome!</h1>
+        <p>Let's calculate your BMR and set your fitness goals</p>
+    </div>
+    
+    <div class="info-box">
+        <p><strong>BMR (Basal Metabolic Rate)</strong> is the number of calories your body needs at rest. We'll use this to help you reach your goals!</p>
+    </div>
+    
+    {% if form.errors %}
+    <div class="error-list">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.age.id_for_label }}">Age</label>
+                {{ form.age }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.gender.id_for_label }}">Gender</label>
+                {{ form.gender }}
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="{{ form.height.id_for_label }}">Height (cm)</label>
+                {{ form.height }}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.current_weight.id_for_label }}">Current Weight (kg)</label>
+                {{ form.current_weight }}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.target_weight.id_for_label }}">Target Weight (kg)</label>
+            {{ form.target_weight }}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.goal.id_for_label }}">What's your goal?</label>
+            {{ form.goal }}
+        </div>
+        
+        <button type="submit" class="submit-btn">Calculate My BMR</button>
+    </form>
+</div>

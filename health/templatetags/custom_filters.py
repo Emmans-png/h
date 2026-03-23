@@ -30,3 +30,11 @@ def sub(value, arg):
         return float(value) - float(arg)
     except (ValueError, TypeError):
         return 0
+
+@register.filter
+def negate(value):
+    """Negate a value (multiply by -1)"""
+    try:
+        return float(value) * -1
+    except (ValueError, TypeError):
+        return 0

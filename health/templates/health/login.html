@@ -119,8 +119,83 @@
         color: #ff6b6b;
         list-style: none;
         padding: 0;
-        margin: 8px 0 0 0;
-        font-weight: 500;
+        margin: 10px 0 0 0;
+    }
+    
+    .error-container {
+        background: linear-gradient(135deg, rgba(229, 9, 20, 0.15) 0%, rgba(229, 9, 20, 0.05) 100%);
+        border: 1px solid rgba(229, 9, 20, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(229, 9, 20, 0.2);
+        animation: shake 0.5s ease-in-out;
+    }
+    
+    .error-container .error-icon {
+        color: #e50914;
+        font-size: 2rem;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .error-container .error-title {
+        color: #e50914;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+    
+    .error-container .error-message {
+        color: #ff6b6b;
+        font-size: 0.9rem;
+        text-align: center;
+        line-height: 1.4;
+    }
+    
+    .error-container .error-details {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 15px;
+        border: 1px solid rgba(229, 9, 20, 0.2);
+    }
+    
+    .error-container .error-details li {
+        color: #ff9999;
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+        list-style-position: inside;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+    
+    .success-container {
+        background: linear-gradient(135deg, rgba(76, 175, 80, 0.15) 0%, rgba(76, 175, 80, 0.05) 100%);
+        border: 1px solid rgba(76, 175, 80, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
+    }
+    
+    .success-container .success-icon {
+        color: #4CAF50;
+        font-size: 2rem;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .success-container .success-message {
+        color: #81c784;
+        font-size: 0.9rem;
+        text-align: center;
+        line-height: 1.4;
     }
     
     .btn-primary {
@@ -250,7 +325,27 @@
     
     <h2 style="color: white; text-align: center; margin-bottom: 30px; font-weight: 600;">Welcome Back</h2>
 
-    <form method="POST"> 
+    <!-- Error Messages -->
+    {% if form.errors %}
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title">Login Failed</div>
+        <div class="error-message">
+            Invalid username or password. Please try again.
+        </div>
+        {% if form.errors %}
+        <div class="error-details">
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <form method="POST" id="loginForm"> 
         {% csrf_token %}
         
         <div class="form-group">
@@ -265,6 +360,25 @@
         
         <button type="submit" class="btn-primary">Sign In</button>
     </form>
+    
+    <script>
+        // Track login attempts
+        let loginAttempts = 0;
+        
+        // Add form submission handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            loginAttempts++;
+            
+            // If this is not the first attempt and there were previous errors, show enhanced error
+            if (loginAttempts > 1) {
+                // Add enhanced error styling for repeated attempts
+                const errorContainer = document.querySelector('.error-container');
+                if (errorContainer) {
+                    errorContainer.classList.add('pulse');
+                }
+            }
+        });
+    </script>
     
     <div class="divider">
         <span>OR</span>

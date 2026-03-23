@@ -197,6 +197,49 @@
         letter-spacing: 1px;
     }
     
+    .password-requirements {
+        background: rgba(52, 152, 219, 0.1);
+        border: 1px solid rgba(52, 152, 219, 0.3);
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .password-requirements h4 {
+        color: #87ceeb;
+        font-size: 0.9rem;
+        margin: 0 0 10px 0;
+        font-weight: 600;
+    }
+    
+    .password-requirements ul {
+        margin: 0;
+        padding: 0 0 0 20px;
+        list-style: none;
+    }
+    
+    .password-requirements li {
+        color: #b3b3b3;
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+        position: relative;
+    }
+    
+    .password-requirements li::before {
+        content: "•";
+        color: #87ceeb;
+        position: absolute;
+        left: -15px;
+    }
+    
+    .form-group .help-text {
+        color: #87ceeb;
+        font-size: 0.8rem;
+        margin-top: 5px;
+        font-style: italic;
+    }
+    
     .signin-link {
         text-align: center;
         margin-top: 25px;
@@ -305,16 +348,35 @@
         <div class="form-group">
             <label for="id_username">Username</label>
             {{ form.username }}
+            {% if form.username.help_text %}
+            <div class="help-text">{{ form.username.help_text }}</div>
+            {% endif %}
         </div>
         
         <div class="form-group">
             <label for="id_password1">Password</label>
             {{ form.password1 }}
+            {% if form.password1.help_text %}
+            <div class="help-text">{{ form.password1.help_text }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- Password Requirements Box -->
+        <div class="password-requirements">
+            <h4>🔐 Password Requirements:</h4>
+            <ul>
+                <li>At least 8 characters long</li>
+                <li>Can include letters, numbers, and symbols</li>
+                <li>Make it memorable but secure</li>
+            </ul>
         </div>
         
         <div class="form-group">
             <label for="id_password2">Confirm Password</label>
             {{ form.password2 }}
+            {% if form.password2.help_text %}
+            <div class="help-text">{{ form.password2.help_text }}</div>
+            {% endif %}
         </div>
         
         <button type="submit" class="btn-primary">Create Account</button>

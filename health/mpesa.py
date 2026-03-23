@@ -45,7 +45,11 @@ def _discover_ngrok_callback_url(path='/mpesa/callback/') -> str | None:
                 if tunnel.get('proto') == 'https' and tunnel.get('public_url'):
                     url = tunnel['public_url'].rstrip('/')
                     return f"{url}{path}"
+    except urllib.error.URLError:
+        # ngrok is not running or not accessible
+        return None
     except Exception:
+        # Any other error (JSON parsing, etc.)
         return None
     return None
 
@@ -120,6 +124,13 @@ def _fetch_access_token() -> dict:
     except urllib.error.HTTPError as exc:
         message = exc.read().decode(errors='ignore')
         raise MpesaConfigError(f'Failed to get access token: HTTP {exc.code} - {message}')
+    except urllib.error.URLError as exc:
+        if 'getaddrinfo failed' in str(exc):
+            raise MpesaConfigError('Network error: Unable to connect to M-Pesa API. Please check your internet connection.')
+        else:
+            raise MpesaConfigError(f'Network error: {str(exc)}')
+    except Exception as exc:
+        raise MpesaConfigError(f'Unexpected error: {str(exc)}')
 
 
 def _get_access_token() -> str:
@@ -304,9 +315,19 @@ def mpesa_stk_push(
             'data': error_data,
             'used_callback_url': used_callback_url,
         }
+    except urllib.error.URLError as exc:
+        if 'getaddrinfo failed' in str(exc):
+            error_message = 'Network error: Unable to connect to M-Pesa API. Please check your internet connection and try again.'
+        else:
+            error_message = f'Network error: {str(exc)}. Please check your internet connection and try again.'
+        return {
+            'success': False,
+            'message': error_message,
+            'used_callback_url': used_callback_url,
+        }
     except Exception as exc:
         return {
             'success': False,
-            'message': f'Network error: {str(exc)}. Please check your internet connection and try again.',
+            'message': f'Unexpected error: {str(exc)}. Please try again.',
             'used_callback_url': used_callback_url,
         }

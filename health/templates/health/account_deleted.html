@@ -1,0 +1,131 @@
+{% load static %}
+<style>
+    body { 
+        background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url("{% static 'images/home.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;        
+        color: white; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .deleted-container {
+        background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(45, 45, 45, 0.95) 100%);
+        border-radius: 20px;
+        padding: 60px 40px;
+        width: 500px;
+        max-width: 90vw;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(220, 53, 69, 0.3);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+        backdrop-filter: blur(10px);
+        animation: slideUp 0.6s ease-out;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .deleted-icon {
+        font-size: 4rem;
+        color: #dc3545;
+        margin-bottom: 20px;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .deleted-container h1 {
+        color: #dc3545;
+        font-size: 2rem;
+        margin: 0 0 20px 0;
+        font-weight: bold;
+    }
+    
+    .deleted-container p {
+        color: #b3b3b3;
+        font-size: 1.1rem;
+        margin: 0 0 30px 0;
+        line-height: 1.6;
+    }
+    
+    .btn-primary {
+        background: #E50914;
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 10px;
+    }
+    
+    .btn-primary:hover {
+        background: #ff0a16;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(229, 9, 20, 0.4);
+    }
+    
+    .btn-secondary {
+        background: transparent;
+        color: #E50914;
+        border: 2px solid #E50914;
+        padding: 15px 40px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 10px;
+    }
+    
+    .btn-secondary:hover {
+        background: #E50914;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(229, 9, 20, 0.4);
+    }
+</style>
+
+<div class="deleted-container">
+    <div class="deleted-icon">🗑️</div>
+    <h1>Account Deleted Successfully</h1>
+    <p>
+        Your account and all associated data have been permanently removed from our system. 
+        We're sorry to see you go and hope you had a great experience tracking your health journey with us.
+    </p>
+    <p style="color: #666; font-size: 0.9rem; margin-bottom: 40px;">
+        If you change your mind, you're always welcome to create a new account anytime.
+    </p>
+    
+    <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+        <a href="{% url 'signup' %}" class="btn-primary">Create New Account</a>
+        <a href="{% url 'login' %}" class="btn-secondary">Back to Login</a>
+    </div>
+</div>

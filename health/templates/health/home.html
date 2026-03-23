@@ -307,15 +307,30 @@
 
 .chart-container {
     background: #181818;
-    padding: 20px;
-    border-radius: 8px;
-    margin-top: 20px;
+    padding: 30px;
+    border-radius: 12px;
     border: 1px solid #333;
+    margin: 30px 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-height: 280px;
+    width: 100%;
 }
 
 .nutrition-chart {
-    height: 300px;
+    height: 200px;
     position: relative;
+    width: 100%;
+}
+
+/* Full width nutrition section */
+.full-width-nutrition {
+    margin: 40px 0;
+    padding: 0 40px;
+}
+
+.full-width-nutrition .chart-container {
+    margin: 0;
 }
 
 /* Community Modal */
@@ -697,6 +712,51 @@
                 </div>
             </div>
 
+            <!-- Weight Tracking Section -->
+            <div class="progress-container" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(229, 9, 20, 0.3); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <h3 style="color: #FF6B35; margin: 0; font-size: 1.1rem; margin-bottom: 12px;">Weight Tracking</h3>
+                        {% if profile %}
+                        <div style="background: rgba(255, 107, 53, 0.1); border: 1px solid rgba(255, 107, 53, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 10px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.85rem;">
+                                <div>
+                                    <span style="color: #b3b3b3;">Current:</span>
+                                    <span style="color: #fff; font-weight: 600; margin-left: 5px;">{{ profile.current_weight|default:"--" }} kg</span>
+                                </div>
+                                <div>
+                                    <span style="color: #b3b3b3;">Target:</span>
+                                    <span style="color: #4CAF50; font-weight: 600; margin-left: 5px;">{{ profile.target_weight|default:"--" }} kg</span>
+                                </div>
+                                <div>
+                                    <span style="color: #b3b3b3;">To Go:</span>
+                                    <span style="color: #87ceeb; font-weight: 600; margin-left: 5px;">{% if weight_diff > 0 %}{{ weight_diff|floatformat:1 }} kg{% elif weight_diff < 0 %}{{ weight_diff|floatformat:1|slice:"1:" }} kg over{% else %}0 kg{% endif %}</span>
+                                </div>
+                                <div>
+                                    <span style="color: #b3b3b3;">BMR:</span>
+                                    <span style="color: #E50914; font-weight: 600; margin-left: 5px;">{{ profile.bmr|default:"--" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% if progress_message %}
+                        <div style="background: rgba(52, 152, 219, 0.1); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 6px; padding: 8px;">
+                            <p style="color: #87ceeb; font-size: 0.8rem; margin: 0;">{{ progress_message }}</p>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <div style="background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 8px; padding: 12px; text-align: center;">
+                            <p style="color: #4CAF50; margin: 0; font-size: 0.9rem;">🎯 Set up your weight profile to track progress</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'weight_tracking' %}" style="background: linear-gradient(135deg, #FF6B35 0%, #ff8c42 100%); color: white; padding: 8px 16px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 0.85rem; transition: all 0.3s ease; margin-left: 15px;"
+                       onmouseover="this.style.transform='translateY(-1px)'" 
+                       onmouseout="this.style.transform='translateY(0)'">
+                        Log Weight
+                    </a>
+                </div>
+            </div>
+
             <div class="today-grid">
                 {% for log in logs %}
                 <div class="food-card">
@@ -712,32 +772,8 @@
                 <p style="color:#666;">No activity today. Start logging to fill your feed!</p>
                 {% endfor %}
             </div>
-            
-            <!-- Nutrition Pie Chart -->
-            <div class="chart-container">
-                <h3 style="color: #E50914; margin-bottom: 15px;">Today's Nutrition Breakdown</h3>
-                <div class="nutrition-chart">
-                    <canvas id="nutritionChart"></canvas>
-                </div>
-                
-                <!-- Historical Small Pie Charts -->
-                {% if history_summary %}
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;">
-                    <h4 style="color: #E50914; margin-bottom: 15px; font-size: 1rem;">Recent Days Nutrition</h4>
-                    <div style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 0;">
-                        {% for day in history_summary|slice:":5" %}
-                            <div style="flex-shrink: 0; text-align: center;">
-                                <canvas id="historyChart{{ forloop.counter }}" width="60" height="60" style="max-width: 60px; max-height: 60px;"></canvas>
-                                <div style="margin-top: 5px; font-size: 10px; color: #b3b3b3;">{{ day.date|date:"M d" }}</div>
-                                <div style="font-size: 9px; color: #E50914; font-weight: bold;">{{ day.day_total }} kcal</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
         </div>
-
+        
         <!-- SIDEBAR -->
         <div class="sidebar">
             <h3 style="color: white; border-bottom: 2px solid #E50914; padding-bottom: 10px; margin-top:0;">CAL History</h3>
@@ -762,6 +798,32 @@
             {% empty %}
                 <p style="color: #444; font-size: 12px;">No previous history found.</p>
             {% endfor %}
+        </div>
+    </div>
+
+    <!-- FULL WIDTH NUTRITION BREAKDOWN SECTION -->
+    <div class="full-width-nutrition">
+        <div class="chart-container">
+            <h3 style="color: #E50914; margin-bottom: 15px;">Today's Nutrition Breakdown</h3>
+            <div class="nutrition-chart">
+                <canvas id="nutritionChart"></canvas>
+            </div>
+            
+            <!-- Historical Small Pie Charts -->
+            {% if history_summary %}
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;">
+                <h4 style="color: #E50914; margin-bottom: 15px; font-size: 1rem;">Recent Days Nutrition</h4>
+                <div style="display: flex; gap: 15px; overflow-x: auto; padding: 10px 0;">
+                    {% for day in history_summary|slice:":5" %}
+                        <div style="flex-shrink: 0; text-align: center;">
+                            <canvas id="historyChart{{ forloop.counter }}" width="60" height="60" style="max-width: 60px; max-height: 60px;"></canvas>
+                            <div style="margin-top: 5px; font-size: 10px; color: #b3b3b3;">{{ day.date|date:"M d" }}</div>
+                            <div style="font-size: 9px; color: #E50914; font-weight: bold;">{{ day.day_total }} kcal</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
